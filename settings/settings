@@ -1,0 +1,9 @@
+[Twitter]
+consumer_key = 7HEqUyy8F9KWOXkfPRYvEajVZ
+consumer_secret = JDfwSwEkDlKUoqu8VN4NhVTA4sbD0769vpwLytCeUM5VE66gpt
+access_token = 1225590595130920967-QDTkmJnP1R8RiTigOzbDaW6SbXvWVC
+access_token_secret = wvxxhan3wb7NWXV2DY2UgEOBog0tCa9Of1qDhFTwVZar7
+
+[App]
+media_folder = \botpy\media
+
