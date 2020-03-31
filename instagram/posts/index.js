@@ -62,7 +62,7 @@ let saveMedia = async (response) => {
     shortcodeOrder = shortcode
    })
   }else{
-    console.log('single media', responseUrl)
+    console.log('single media')
     singleMedia= await save(responseUrl, './media').then(res => {
       console.log('res', res)
       let fileName = res.url 
