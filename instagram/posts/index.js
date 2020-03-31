@@ -2,29 +2,52 @@ const instagramPosts = require('instagram-posts');
 const save = require('instagram-save');
 const axios = require('axios'); 
 let utils = require('../utils');
+let fs = require('fs');
 request = require('request');
 
 let getInstagramPost = async () => {
+    
+    let response = await instagramPosts('corongabot', {count: 3}),
+    responseTypename = response[0].__typename,
+    responseUrl = response[0].url,
+    shortcode = response[0].shortcode,
+    isPostDuplicate = false,
+    instagramPost = {},
+    mediaFromFolder = await getMediaFromFolder()
 
-    let response = await instagramPosts('corongabot', {count: 25})
-
+    if(responseTypename != 'GraphSidecar'){
+      shortcode = shortcode.split()
+      console.log('shortcode q vai passar', shortcode)
+      isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
+      console.log('is duplicate non graphsidecar', isPostDuplicate)
+    }else{
+      await convertGraphSideCar(responseUrl).then(res => {
+        shortcode = res
+      })
+      isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
+      console.log('is duplicate graphsidecar', isPostDuplicate)
+    }
     //aqui faço verificaçao
-    let media = await saveMedia(response),
-        username = response[0].username,
-        text = response[0].text,
-        time = response[0].time,
-        typename = response[0].__typename
-        
-    text = text.replace('@', '@.')
-  //console.log('response aki', response[0])
-    let instagramPost = [{
-      'typename': typename,
-      'media': media,
-      'username': username,
-      'text': text,
-      'time': time
-    }]
+    if(isPostDuplicate == false){ 
+      if(mediaFromFolder.length >= 1) deleteMediaFromFolder(mediaFromFolder)
+      let media = await saveMedia(response),
+      username = response[0].username,
+      text = response[0].text,
+      time = response[0].time,
+      typename = response[0].__typename
+          
+      console.log('response da savemedia', media)
+      text = text.replace('@', '@.')
+    //console.log('response aki', response[0])
+      instagramPost = [{
+        'typename': typename,
+        'media': media,
+        'username': username,
+        'text': text,
+        'time': time
+      }]
 
+    }
     return instagramPost
 }
 
@@ -39,9 +62,12 @@ let saveMedia = async (response) => {
     shortcodeOrder = shortcode
    })
   }else{
-    singleMedia= await save(responseUrl, '../../media').then(res => {
+    console.log('single media', responseUrl)
+    singleMedia= await save(responseUrl, './media').then(res => {
+      console.log('res', res)
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
+      fileName = fileName.split()
       return fileName
     })
   }
@@ -103,6 +129,65 @@ let getUrlShortCode = node => {
   return uri
 }
 
+let getMediaFromFolder = async () => {
+  return new Promise(function(resolve, reject) {
+    fs.readdir(__dirname + '../../../media/', function(err, files){
+      let media = []
+      if(err){
+          console.log(err)
+          reject(err)
+      }else{
+          files.forEach(function(file){
+              media.push(file)
+          })
+          resolve(media)
+      }
+    })
+  })
+}
+
+let verifyIfPostIsDuplicate = async (media, shortcode) => {
+  let flag = false
+  console.log('media', media)
+  if(media.length == 0){
+    return false
+  }else{
+    while(shortcode.length != 0){
+      for(file of media){
+        if(shortcode.length != 0){
+          let firstElement = shortcode[0]
+          console.log('shortcode', shortcode)
+          if(file.includes(firstElement)){
+            console.log(`arquivo duplicado, file ${file} | firstElement ${firstElement}`)
+            flag = true 
+            shortcode.shift()
+          }else{
+            flag = false 
+            shortcode.shift()
+            console.log('nao tinha ainda o arquivo')
+          }
+        }
+      }
+    }
+  }
+  return flag
+}
+
+let deleteMediaFromFolder = async (media) => {
+  console.log('media from deleteMediaFromFolder', media)
+  for(file of media){
+    imagePath = __dirname + '../../../media/' + file
+    fs.unlink(imagePath, function(err){
+      if (err){
+        console.log('ERROR: unable to delete media ' + imagePath);
+      }
+      else{
+        console.log('media ' + imagePath + ' was deleted');
+      }
+    })
+  }
+}
+
 let orderMedia = urlShortcode => {
   let shortcodeOrder = urlShortcode.map(value => {
     return value.shortcode
@@ -115,7 +200,7 @@ let orderMedia = urlShortcode => {
   console.log(teste)
 })
 (); */
-
+//getInstagramPost()
 module.exports = {
   getInstagramPost
 }

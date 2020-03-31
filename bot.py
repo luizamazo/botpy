@@ -41,12 +41,12 @@ def master():
             if len(mediaIdImages) > 0 and len(mediaIdImages) < 4:
                 if tweet_id == '':
                     sentTweet = api.update_status(
-                    status = 'cfhyuju', 
+                    status = 'axxaa', 
                     media_ids = mediaIdImages
                 )
                 else: 
                     sentTweet = api.update_status(
-                        status = 'fefgrgtyh', 
+                        status = 'xxxxxx', 
                         in_reply_to_status_id = tweet_id,
                         auto_populate_reply_metadata = True,
                         media_ids = mediaIdImages
@@ -58,12 +58,12 @@ def master():
             
             if('1 -' in mediaPath):
                 sentTweet = api.update_status(
-                    status ='ds',
+                    status ='dadadxxxad',
                     media_ids = mediaIdVideo
                 )
             else:
                 sentTweet = api.update_status(
-                    status = 'yyy', 
+                    status = 'yyxxxyddd', 
                     in_reply_to_status_id = tweet_id,
                     auto_populate_reply_metadata = True,
                     media_ids = mediaIdVideo
@@ -76,12 +76,12 @@ def master():
         if len(mediaIdImages) == 4:
             if tweet_id == '':
                 sentTweet = api.update_status(
-                    status = 'aaa', 
+                    status = 'aadxxdda', 
                     media_ids = mediaIdImages
                 )
             else: 
                 sentTweet = api.update_status(
-                    status = 'ssas', 
+                    status = 'sddsas', 
                     in_reply_to_status_id = tweet_id,
                     auto_populate_reply_metadata = True,
                     media_ids = mediaIdImages
@@ -92,12 +92,12 @@ def master():
         if index == len(media):
             if tweet_id == '': 
                 sentTweet = api.update_status(
-                    status = 'xcxc', 
+                    status = 'xcddxxxxdxc', 
                     media_ids = mediaIdImages
                 )
             else: 
                 sentTweet = api.update_status(
-                    status = 'asasadaefr', 
+                    status = 'asasaddxxxxxddaefr', 
                     in_reply_to_status_id = tweet_id,
                     auto_populate_reply_metadata = True,
                     media_ids = mediaIdImages

@@ -3,23 +3,27 @@ const { spawn } = require('child_process');
 
 let master = async () => {
    
-        tweet = `|POST| reee: cc`
+        let igPost = await instagram.getInstagramPost()
+       /* console.log(igPost)
+        tweet = `|POST| reee: ${igPost.text}`
         tweet = encode_utf8(tweet)
-
-        const cuzao = spawn('python', ['bot.py', tweet]);
-
-        cuzao.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`);
-        });
         
-        cuzao.stderr.on('data', (data) => {
-            console.log(`stderr: ${data}`);
-        });
-        
-        cuzao.on('close', (code) => {
-            console.log(`child process exited with code ${code}`);
-        });
-       // console.log('kosjdo', instagramMedia.length)
+        if(igPost){
+            const cuzao = spawn('python', ['bot.py', tweet]);
+
+            cuzao.stdout.on('data', (data) => {
+                console.log(`stdout: ${data}`);
+            });
+            
+            cuzao.stderr.on('data', (data) => {
+                console.log(`stderr: ${data}`);
+            });
+            
+            cuzao.on('close', (code) => {
+                console.log(`child process exited with code ${code}`);
+            });
+           // console.log('kosjdo', instagramMedia.length)
+        }  */ 
         
 }
 
