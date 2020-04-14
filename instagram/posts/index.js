@@ -5,7 +5,7 @@ let utils = require('../utils');
 let fs = require('fs');
 request = require('request');
 
-let getInstagramPost = async () => {
+let getInstagramPosts = async () => {
     
     let response = await instagramPosts('corongabot', {count: 3}),
     responseTypename = response[0].__typename,
@@ -13,11 +13,10 @@ let getInstagramPost = async () => {
     shortcode = response[0].shortcode,
     isPostDuplicate = false,
     instagramPost = {},
-    mediaFromFolder = await getMediaFromFolder()
+    mediaFromFolder = await utils.getMediaFromFolder('posts')
 
     if(responseTypename != 'GraphSidecar'){
       shortcode = shortcode.split()
-      console.log('shortcode q vai passar', shortcode)
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
       console.log('is duplicate non graphsidecar', isPostDuplicate)
     }else{
@@ -29,14 +28,12 @@ let getInstagramPost = async () => {
     }
     //aqui faço verificaçao
     if(isPostDuplicate == false){ 
-      if(mediaFromFolder.length >= 1) deleteMediaFromFolder(mediaFromFolder)
+      if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
       let media = await saveMedia(response),
       username = response[0].username,
       text = response[0].text,
       time = response[0].time,
       typename = response[0].__typename
-          
-      console.log('response da savemedia', media)
       text = text.replace('@', '@.')
     //console.log('response aki', response[0])
       instagramPost = [{
@@ -63,20 +60,17 @@ let saveMedia = async (response) => {
    })
   }else{
     console.log('single media')
-    singleMedia= await save(responseUrl, './media').then(res => {
-      console.log('res', res)
+    singleMedia= await save(responseUrl, '././media/posts/').then(res => {
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
       fileName = fileName.split()
       return fileName
     })
   }
-
   return shortcodeOrder.length == 0 ? singleMedia : shortcodeOrder
 }
 
 let convertGraphSideCar = async responseUrl => {
-  
     responseUrl = responseUrl + '?__a=1'
     let urlShortcode = []
 
@@ -94,9 +88,10 @@ let convertGraphSideCar = async responseUrl => {
         }
         
         let number = 0
+        path = '././media/posts/'
         for(value of urlShortcode){  
           number++
-          utils.download(value.url, `${number} - ` + value.shortcode, function(){
+          utils.download(value.url, `${number} - ` + value.shortcode, path, function(){
             //console.log('done')
           })
         } 
@@ -129,23 +124,6 @@ let getUrlShortCode = node => {
   return uri
 }
 
-let getMediaFromFolder = async () => {
-  return new Promise(function(resolve, reject) {
-    fs.readdir(__dirname + '../../../media/', function(err, files){
-      let media = []
-      if(err){
-          console.log(err)
-          reject(err)
-      }else{
-          files.forEach(function(file){
-              media.push(file)
-          })
-          resolve(media)
-      }
-    })
-  })
-}
-
 let verifyIfPostIsDuplicate = async (media, shortcode) => {
   let flag = false
   console.log('media', media)
@@ -173,21 +151,6 @@ let verifyIfPostIsDuplicate = async (media, shortcode) => {
   return flag
 }
 
-let deleteMediaFromFolder = async (media) => {
-  console.log('media from deleteMediaFromFolder', media)
-  for(file of media){
-    imagePath = __dirname + '../../../media/' + file
-    fs.unlink(imagePath, function(err){
-      if (err){
-        console.log('ERROR: unable to delete media ' + imagePath);
-      }
-      else{
-        console.log('media ' + imagePath + ' was deleted');
-      }
-    })
-  }
-}
-
 let orderMedia = urlShortcode => {
   let shortcodeOrder = urlShortcode.map(value => {
     return value.shortcode
@@ -196,11 +159,11 @@ let orderMedia = urlShortcode => {
 }
 
 /*(async () => {
-  let teste = await getInstagramPost()
+  let teste = await getInstagramPosts()
   console.log(teste)
 })
 (); */
-//getInstagramPost()
+
 module.exports = {
-  getInstagramPost
+  getInstagramPosts
 }

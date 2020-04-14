@@ -1,9 +1,13 @@
-instagram = require('./instagram/posts/index.js');
-const { spawn } = require('child_process');
+instagramPost = require('./instagram/posts/index.js')
+instagramStory = require('./instagram/stories/index.js')
+const { spawn } = require('child_process')
 
 let master = async () => {
    
-        let igPost = await instagram.getInstagramPost()
+       // let igPost = await instagramPost.getInstagramPosts()
+       let igStory = await instagramStory.getInstagramStories()
+     
+
        /* console.log(igPost)
         tweet = `|POST| reee: ${igPost.text}`
         tweet = encode_utf8(tweet)
