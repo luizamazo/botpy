@@ -41,7 +41,8 @@ let getInstagramPosts = async () => {
         'media': media,
         'username': username,
         'text': text,
-        'time': time
+        'time': time,
+        'url': responseUrl
       }]
 
     }

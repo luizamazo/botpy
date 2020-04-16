@@ -4,9 +4,9 @@ const { spawn } = require('child_process')
 
 let master = async () => {
    
-       // let igPost = await instagramPost.getInstagramPosts()
+     //  let igPost = await instagramPost.getInstagramPosts()
        let igStory = await instagramStory.getInstagramStories()
-     
+       console.log(igStory)
 
        /* console.log(igPost)
         tweet = `|POST| reee: ${igPost.text}`

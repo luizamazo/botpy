@@ -43,9 +43,29 @@ let deleteMediaFromFolder = async (media, folder) => {
     })
   }
 }
+
+let deleteFileFromFolder = async (file, folder) => {
+  let mediaFromFolder = await getMediaFromFolder(folder)
+  for(media of mediaFromFolder){
+    console.log(`file to delete ${file} | current media ${media}`)
+    if(media == file){
+      let imagePath = __dirname + './../media/' + folder + '/' + file
+      fs.unlink(imagePath, function(err){
+        if (err){
+          console.log('ERROR: unable to delete media ' + imagePath);
+        }
+        else{
+          console.log('file ' + imagePath + ' was deleted');
+        }
+      })
+      break
+    }
+  }
+}
   
   module.exports = {
       download,
       getMediaFromFolder,
-      deleteMediaFromFolder
+      deleteMediaFromFolder,
+      deleteFileFromFolder
   }

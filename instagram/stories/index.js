@@ -5,47 +5,76 @@ let getInstagramStories = async () => {
 
   let mediaFromFolder = await utils.getMediaFromFolder('stories'),
   path = '././media/stories/',
-  number = 0
- // console.log('mediafromfolder', mediaFromFolder)
-  instory('corongabot').then(async response => {
-  
-    for(value of response){
-     // console.log('value', value)
-      value = value[0]
-      isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
-      console.log('is story duplicate on return', isStoryDuplicate)
-      number++
-      if(isStoryDuplicate == false){
-        utils.download(value.url, `${number} - ` + value.shortcode, path, function(){
-          console.log('isStoryDuplicate = false, logo fez download')
-        })
+  number = 0,
+  result = instory('corongabot')
+    .then(async response => {
+      for(value of response){
+        value = value[0]
+        //console.log('res', new Date(value.expiring_at * 1000))
+        isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
+        console.log('is story duplicate on return', isStoryDuplicate)
+        number++
+        if(isStoryDuplicate == false){
+          utils.download(value.url, `${number} - ${value.shortcode} [${value.expiring_at}]`, path, function(){
+            console.log('isStoryDuplicate = false, logo fez download')
+          })
+        }
       }
-    }
-     
-  })
+      return 200
+    }).catch(error => {
+      return error
+    })
+
+    checkExpiredStories(mediaFromFolder)
+
+  return result
+
 }
 
 let verifyIfStoryIsDuplicate = async (media, shortcode) => {
   let flag = false
-  console.log('media', media)
+//  console.log('media', media)
   if(media.length == 0){
     return false
   }else{
       for(file of media){
-          console.log('shortcode', shortcode)
+         // console.log(`file ${file} | shortcode ${shortcode}`)
           if(file.includes(shortcode)){
-            console.log(`arquivo duplicado, file ${file} | shortcode ${shortcode}`)
+          //  console.log(`arquivo duplicado`)
             flag = true 
             break  
           }else{
             flag = false 
-            console.log(`nao tinha ainda o arquivo, file ${file} | shortcode ${shortcode}`)
-            break 
+         //   console.log(`nao tinha ainda o arquivo`)
           }
       }
   }
   return flag
 }
+
+let checkExpiredStories = async mediaFromFolder => {
+
+  for(file of mediaFromFolder){
+    let regex =  new RegExp(/\[(.*?)]/g),
+    result = file.match(regex).toString().replace('[', '').replace(']', '')
+    expirationDate = new Date(result * 1000),
+    currentDate = new Date()
+    console.log(`expirationDate ${expirationDate} | currentDate ${currentDate}`)
+    if(expirationDate == 'Thu Apr 16 2020 02:22:34 GMT-0400 (GMT-04:00)'){
+      console.log('currentFile', file)
+      await utils.deleteFileFromFolder(file, 'stories')
+    }
+
+    /* expirationDate Sat Sep 15 2018 09:29:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)
+expirationDate Thu Apr 16 2020 02:22:34 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)
+expirationDate Thu Apr 16 2020 05:09:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)        
+expirationDate Thu Apr 16 2020 02:22:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)        
+expirationDate Thu Apr 16 2020 02:22:32 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00) */
+     
+  }
+   
+}
+
 
 module.exports = {
   getInstagramStories
