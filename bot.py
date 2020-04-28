@@ -4,19 +4,34 @@ import sys
 import time
 from settings import config
 import pathlib
+import json, re
 
 auth = tweepy.OAuthHandler(config.consumer_key, config.consumer_secret)
 auth.set_access_token(config.access_token, config.access_token_secret)
 #print(pathlib.Path(mediaPath).suffix) pra pegar o tipo de arquivo - extensão
 api = tweepy.API(auth)
 #arg = sys.argv
-arg = 'defegrgth'
-#arg = sys.argv[1:]
+#arg = 'defegrgth'
+arg = sys.argv[1:]
+tweet = arg[0]
+#tweet = tweet.encode('utf-16', 'surrogatepass').decode('utf-16')
 
-def getMediaFromFolder():
+def inferno():
+    json_input= '{"screen_name":"fred","location":"home","text":"Here is an emoji: 🙌... and here is another one 💩"}'
+    emoji_pattern = re.compile('[\U0001F300-\U0001F64F]')
+    dict_input = json.loads(json_input)
+    text = dict_input['text']
+    screen_name = dict_input['screen_name']
+    emojis = emoji_pattern.findall(text)
+
+    print(len(emojis), 'chars found in post by', screen_name)
+    for emoji in emojis:
+        print('emoji: ' + json.dumps(emoji))
+
+def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
-    mediaFolder = os.path.join(dir, 'media')
-    print('dir', mediaFolder)
+    mediaFolder = os.path.join(dir, 'media/' + folder)
+    print('getMediaFromFolder', mediaFolder)
 
     media_list = [] #array that contains path 
     for dirpath, dirnames, files in os.walk(mediaFolder):
@@ -24,94 +39,142 @@ def getMediaFromFolder():
             media_list.append(os.path.join(dirpath, f))
     return media_list
 
-def master(): 
-    media = getMediaFromFolder()
+def getFileFromMediaFolder(folder, fileName):
+    dir = os.path.dirname(__file__)
+    mediaFolder = os.path.join(dir, 'media/' + folder)
+    
+    for dirpath, dirnames, files in os.walk(mediaFolder):
+        for f in files:
+            print('file', f)
+            if fileName in f:
+                mediaPath = os.path.join(dirpath, f)
+    return mediaPath
+
+def master():
+    
+    if "POST" in tweet:
+        folder = "posts"
+    elif "STORIES" in tweet:
+        folder = "stories"
+    
+    print('folder', folder)
+    
+    if folder == "posts":
+        media = getMediaFromFolder(folder)
+        print('media', media)
+        tweetPosts(media)
+    else:
+        storyName = sys.argv[2]
+        print('storyName do py', storyName)
+        filePath = getFileFromMediaFolder(folder, storyName)
+        mediaUploaded = api.upload_chunked(filePath)
+        media_ids = [mediaUploaded.media_id_string]      
+        print('filePath', filePath)
+       
+        sentTweet = api.update_status(
+            status = tweet, 
+            media_ids = media_ids
+        )
+        
+        print('tweetou vai pro proximo')
+
+def tweetPosts(media):
     mediaIdImages = []
     mediaIdVideo = []
     tweet_id = ''
     for index, path in enumerate(media, start = 1):
-        #mediaIdStrings.append(mediaUploaded.media_id_string)
-        mediaPath = path
-        mediaUploaded = api.upload_chunked(mediaPath)
-        print('indeeex', index)
-        print('mediaoath', len(media))
-        print('lengh', len(mediaIdImages))
-        if hasattr(mediaUploaded, 'video'):  
-            
-            if len(mediaIdImages) > 0 and len(mediaIdImages) < 4:
+            mediaPath = path
+            mediaUploaded = api.upload_chunked(mediaPath)
+            print('mediaUploaded', mediaUploaded)
+            if hasattr(mediaUploaded, 'video'):  
+                if len(mediaIdImages) > 0 and len(mediaIdImages) < 4:
+                    print('eh video, mas tem img antes de 4, primeiro da thread')
+                    if tweet_id == '':
+                        sentTweet = api.update_status(
+                            status = tweet, 
+                            media_ids = mediaIdImages
+                        )
+                    else: 
+                        print('tem < 4 antes desse video, faz parte de thread')
+                        sentTweet = api.update_status(
+                            status = tweet, 
+                            in_reply_to_status_id = tweet_id,
+                            auto_populate_reply_metadata = True,
+                            media_ids = mediaIdImages
+                        ) 
+                        
+                    tweet_id = sentTweet.id_str
+                    mediaIdImages = []
+                    
+                mediaIdVideo.append(mediaUploaded.media_id_string)
+                
+                if('1 -' in mediaPath):
+                    print('eh o primeiro video da sequencia')
+                    sentTweet = api.update_status(
+                        status = tweet,
+                        media_ids = mediaIdVideo
+                    )
+                else:
+                    print('video faz parte de thread')
+                    sentTweet = api.update_status(
+                        status = tweet, 
+                        in_reply_to_status_id = tweet_id,
+                        auto_populate_reply_metadata = True,
+                        media_ids = mediaIdVideo
+                    )  
+                tweet_id = sentTweet.id_str
+                mediaIdVideo = []
+            else:
+                print('eh ibagem, adiciona no array')
+                mediaIdImages.append(mediaUploaded.media_id_string)
+                print('array de ibagens', mediaIdImages)
+
+            if len(mediaIdImages) == 4:
+                print('completou 4 imagens')
                 if tweet_id == '':
+                    print('quatro imgs sao as primeiras')
                     sentTweet = api.update_status(
-                    status = 'axxaa', 
-                    media_ids = mediaIdImages
-                )
+                        status = tweet, 
+                        media_ids = mediaIdImages
+                    )
                 else: 
+                    print('quatro imgs fazem parte de thread')
                     sentTweet = api.update_status(
-                        status = 'xxxxxx', 
+                        status = tweet, 
                         in_reply_to_status_id = tweet_id,
                         auto_populate_reply_metadata = True,
                         media_ids = mediaIdImages
-                    )    
+                    )
                 tweet_id = sentTweet.id_str
                 mediaIdImages = []
-                print('tweetid', tweet_id)
-            mediaIdVideo.append(mediaUploaded.media_id_string)
-            
-            if('1 -' in mediaPath):
-                sentTweet = api.update_status(
-                    status ='dadadxxxad',
-                    media_ids = mediaIdVideo
-                )
-            else:
-                sentTweet = api.update_status(
-                    status = 'yyxxxyddd', 
-                    in_reply_to_status_id = tweet_id,
-                    auto_populate_reply_metadata = True,
-                    media_ids = mediaIdVideo
-                )  
-            tweet_id = sentTweet.id_str
-            mediaIdVideo = []
-        else:
-            mediaIdImages.append(mediaUploaded.media_id_string)
 
-        if len(mediaIdImages) == 4:
-            if tweet_id == '':
-                sentTweet = api.update_status(
-                    status = 'aadxxdda', 
-                    media_ids = mediaIdImages
-                )
-            else: 
-                sentTweet = api.update_status(
-                    status = 'sddsas', 
-                    in_reply_to_status_id = tweet_id,
-                    auto_populate_reply_metadata = True,
-                    media_ids = mediaIdImages
-                )
-            tweet_id = sentTweet.id_str
-            mediaIdImages = []
-
-        if index == len(media):
-            if tweet_id == '': 
-                sentTweet = api.update_status(
-                    status = 'xcddxxxxdxc', 
-                    media_ids = mediaIdImages
-                )
-            else: 
-                sentTweet = api.update_status(
-                    status = 'asasaddxxxxxddaefr', 
-                    in_reply_to_status_id = tweet_id,
-                    auto_populate_reply_metadata = True,
-                    media_ids = mediaIdImages
-                )
-
+            if index == len(media):
+                print('chegou no fim onde index e numero de media sao mesmo numero', len(media))
+                if mediaIdImages != []: 
+                    if tweet_id == '':
+                        print('posta o restante como primeiro tweet')
+                        sentTweet = api.update_status(
+                            status = tweet, 
+                            media_ids = mediaIdImages
+                    )
+                    else: 
+                        print('posta o restante que faz parte de thread')
+                        sentTweet = api.update_status(
+                            status = tweet, 
+                            in_reply_to_status_id = tweet_id,
+                            auto_populate_reply_metadata = True,
+                            media_ids = mediaIdImages
+                        )
+                
 def verifyTweetOrder(tweet_id, mediaId):
     if tweet_id == '': 
         sentTweet = api.update_status(
-            status = arg, 
+            status = tweet, 
             media_ids = mediaId
         )
     else: 
         sentTweet = api.update_status(
-            status = arg, 
+            status = tweet, 
             in_reply_to_status_id = tweet_id,
             auto_populate_reply_metadata = True,
             media_ids = mediaId
@@ -119,7 +182,7 @@ def verifyTweetOrder(tweet_id, mediaId):
     return sentTweet.id_str
     
 def teste():
-    print(arg)
+    inferno()
 
 #teste()           
 master()

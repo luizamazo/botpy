@@ -6,35 +6,44 @@ const BOT_NAME = 'botpy'
 let master = async () => {
 
         igPost = await instagramPost.getInstagramPosts(),
-        igStory = await instagramStory.getInstagramStories(),
+       // igStory = await instagramStory.getInstagramStories(),
         igPost = igPost[0]
+        let tweet = igPost.text
+      
+        console.log('unicode', toUnicode(tweet))
+       // console.log('igstory', igStory)
 
         if(igPost.duplicate == false){
             await childProcessInstagramPosts(igPost)
         } 
         
-        console.log('no master igstory', igStory)
-        for(value of igStory){
+        /* for(value of igStory){
+            console.log('entrou nesa merda', value[0].shortcode)
             if(value[0].duplicate == false){ 
+               
                 await childProcessInstagramStories(value[0], igPost)
-                console.log('dentro do primeiro for url', value[0].url, 'shortcode: ', value[0].shortcode)
             }
-        }
-} 
+        }  */
+}
+
+function toUnicode(str) {
+	return str.split('').map(function (value, index, array) {
+		var temp = value.charCodeAt(0).toString(16).toUpperCase();
+		if (temp.length > 2) {
+			return '\\u' + temp;
+		}
+		return value;
+	}).join('');
+}
+
 
 let childProcessInstagramPosts = async igPost => {
-    let tweet = '',
-        text = igPost.text
-
-        if(text.length > 280){
-            diff = text.length -  277
-            text = text.slice(0, text.length - diff)
-            text = text + '...'
-        }
-        
-        tweet = `[POST ${igPost.count}] ${igPost.username}: ${text} 
+    let tweet = ''
+        tweet = `[POST] ${igPost.username}: ${igPost.text} ${igPost.count}
 
 ${igPost.url} #${BOT_NAME}`
+       // tweet = toUnicode(tweet)
+       tweet = encode_utf8(tweet)
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -52,11 +61,13 @@ ${igPost.url} #${BOT_NAME}`
 }
 
 let childProcessInstagramStories = async (igStory, igPost) => {
+    console.log('igstory e igpost', igStory, igPost)
     let tweet = ''
         tweet = `[STORIES] ${igPost.username}: 
 
 ${igStory.storyUrl} #${BOT_NAME}`
-        console.log('shortcode do js',  igStory.shortcode)
+        tweet = encode_utf8(tweet)
+
         const child = spawn('python', ['bot.py', tweet, igStory.shortcode])
 
         child.stdout.on('data', (data) => {
@@ -75,17 +86,6 @@ ${igStory.storyUrl} #${BOT_NAME}`
 
 function encode_utf8(string){
   return unescape(encodeURIComponent(string))
-}
-
-
-function toUnicode(str) {
-	return str.split('').map(function (value, index, array) {
-		var temp = value.charCodeAt(0).toString(16).toUpperCase()
-		if (temp.length > 2) {
-			return '\\u' + temp;
-		}
-		return value;
-	}).join('')
 }
 
 master()

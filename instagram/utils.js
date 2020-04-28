@@ -1,16 +1,22 @@
 let fs = require('fs'),
 request = require('request');
 
-let download = (uri, filename, path, callback) => {
+let download = async (uri, filename, path) => {
+  return new Promise(function(resolve, reject) {
     request.head(uri, function(err, res, body){
      // console.log('content-type:', res.headers['content-type'])
      // console.log('content-length:', res.headers['content-length'])
-      let type =  res.headers['content-type']
-      type = type.substring(type.indexOf("/") + 1)
-     
-      request(uri).pipe(fs.createWriteStream(`${path}` + [filename + '.' + type])).on('close', callback)
+      if(err){
+        console.log(err)
+      }else{ 
+        let type =  res.headers['content-type']
+        type = type.substring(type.indexOf("/") + 1)
+       
+        request(uri).pipe(fs.createWriteStream(`${path}` + [filename + '.' + type])).on('finish', resolve)
+      }
     })
   }
+)}
 
 let getMediaFromFolder = async (folder) => {
   return new Promise(function(resolve, reject) {

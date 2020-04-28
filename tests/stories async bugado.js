@@ -7,49 +7,44 @@ let getInstagramStories = async () => {
   path = '././media/stories/',
   number = 0,
   storyUrl = '',
-  instagramStory = [],
-  stories = await instory('corongabot').then(res => res)
-  console.log('stories', stories)
+  result = instory('corongabot')
+    .then(async response => {
+      for(value of response){
+        value = value[0]
+        //console.log('res', new Date(value.expiring_at * 1000))
+        isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
+        console.log('is story duplicate on return', isStoryDuplicate)
+        number++
+        if(isStoryDuplicate == false){
+          
+          await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
+          
+          instagramStory = [{
+            'duplicate': false,
+            'storyUrl': value.url
+          }]
 
-  for(value of stories){
-    value = value[0]
-    //console.log('res', new Date(value.expiring_at * 1000))
-    isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
-    console.log('is story duplicate on return', isStoryDuplicate)
-    number++
-    if(isStoryDuplicate == false){
-      let saved = await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
-      console.log('saved', saved)
-      instagramStory.push([{
-        'duplicate': false,
-        'storyUrl': value.url,
-        'shortcode': value.shortcode
-      }])
-    }else{
-      instagramStory = [{
-        'duplicate': true
-      }]
-    }
-  }
-
-    let onlyNewStories = instagramStory.filter(story => {
-      return story.duplicate != true
-    }) 
-   
-    if(onlyNewStories.length == 0){
-      onlyNewStories = [{'duplicate': true}]
-    }
-   
+        }else{
+          instagramStory = [{
+            'duplicate': true
+          }]
+        }
+      }
+      console.log('cacete', instagramStory)
+      return 200
+    }).catch(error => {
+      console.log(error)
+    })
+    console.log('result', result)
     checkExpiredStories(mediaFromFolder)
-    
-  return onlyNewStories
+
+  return instagramStory
 
 }
 
 let saveStory = async (url, number, shortcode, expiring_at, path) => {
-  return utils.download(url, `${number} - ${shortcode} [${expiring_at}]`, path).then(res => {
+  utils.download(url, `${number} - ${shortcode} [${expiring_at}]`, path, function(){
     console.log('isStoryDuplicate = false, logo fez download')
-    return 'ok'
   })
 }
 
@@ -82,7 +77,7 @@ let checkExpiredStories = async mediaFromFolder => {
     expirationDate = new Date(result * 1000),
     currentDate = new Date()
     console.log(`expirationDate ${expirationDate} | currentDate ${currentDate}`)
-    if(currentDate >= expirationDate){
+    if(expirationDate == 'Thu Apr 16 2020 02:22:34 GMT-0400 (GMT-04:00)'){
       console.log('currentFile', file)
       await utils.deleteFileFromFolder(file, 'stories')
     }

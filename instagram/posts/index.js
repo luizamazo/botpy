@@ -11,10 +11,12 @@ let getInstagramPosts = async () => {
     responseTypename = response[0].__typename,
     responseUrl = response[0].url,
     shortcode = response[0].shortcode,
+    username = response[0].username,
     isPostDuplicate = false,
     instagramPost = {},
-    mediaFromFolder = await utils.getMediaFromFolder('posts')
-
+    mediaFromFolder = await utils.getMediaFromFolder('posts'),
+    count = ''
+  
     if(responseTypename != 'GraphSidecar'){
       shortcode = shortcode.split()
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
@@ -30,22 +32,31 @@ let getInstagramPosts = async () => {
     if(isPostDuplicate == false){ 
       if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
       let media = await saveMedia(response),
-      username = response[0].username,
       text = response[0].text,
       time = response[0].time,
       typename = response[0].__typename
       text = text.replace('@', '@.')
+      mediaFromFolder = await utils.getMediaFromFolder('posts'),
+      count = countMediaType(mediaFromFolder)
     //console.log('response aki', response[0])
       instagramPost = [{
+        'duplicate': false,
         'typename': typename,
         'media': media,
         'username': username,
         'text': text,
         'time': time,
-        'url': responseUrl
+        'url': responseUrl,
+        'count': count
       }]
 
+    }else{
+      instagramPost = [{
+        'duplicate': true,
+        'username': username
+      }]
     }
+    
     return instagramPost
 }
 
@@ -92,8 +103,8 @@ let convertGraphSideCar = async responseUrl => {
         path = '././media/posts/'
         for(value of urlShortcode){  
           number++
-          utils.download(value.url, `${number} - ` + value.shortcode, path, function(){
-            //console.log('done')
+          utils.download(value.url, `${number} - ${value.shortcode}`, path).then(res => {
+            console.log('chamou a utils download')
           })
         } 
        
@@ -157,6 +168,31 @@ let orderMedia = urlShortcode => {
     return value.shortcode
   })
   return shortcodeOrder
+}
+
+let countMediaType = mediaFromFolder => {
+  let countPictures = 0,
+  countVideos = 0,
+  count = ''
+  for(file of mediaFromFolder){
+    if(file.includes('jpg') || file.includes('png') || file.includes('jpeg')){
+      countPictures++
+    }else{
+      countVideos++
+    } 
+  }
+
+  if(countPictures != 0 && countVideos != 0){
+    count = `| ${countPictures}P${countVideos}V`
+  }
+
+  if(countPictures == 0 && countVideos > 1){
+    count = `| ${countVideos}V`
+  }else if(countVideos == 0 && countPictures > 1){
+    count = `| ${countPictures}P`
+  }
+
+  return count
 }
 
 /*(async () => {
