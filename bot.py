@@ -16,18 +16,6 @@ arg = sys.argv[1:]
 tweet = arg[0]
 #tweet = tweet.encode('utf-16', 'surrogatepass').decode('utf-16')
 
-def inferno():
-    json_input= '{"screen_name":"fred","location":"home","text":"Here is an emoji: 🙌... and here is another one 💩"}'
-    emoji_pattern = re.compile('[\U0001F300-\U0001F64F]')
-    dict_input = json.loads(json_input)
-    text = dict_input['text']
-    screen_name = dict_input['screen_name']
-    emojis = emoji_pattern.findall(text)
-
-    print(len(emojis), 'chars found in post by', screen_name)
-    for emoji in emojis:
-        print('emoji: ' + json.dumps(emoji))
-
 def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
@@ -70,12 +58,10 @@ def master():
         mediaUploaded = api.upload_chunked(filePath)
         media_ids = [mediaUploaded.media_id_string]      
         print('filePath', filePath)
-       
-        sentTweet = api.update_status(
-            status = tweet, 
-            media_ids = media_ids
-        )
-        
+        #sentTweet = api.update_status(
+         #   status = tweet, 
+        #    media_ids = media_ids
+       # )
         print('tweetou vai pro proximo')
 
 def tweetPosts(media):
@@ -182,7 +168,7 @@ def verifyTweetOrder(tweet_id, mediaId):
     return sentTweet.id_str
     
 def teste():
-    inferno()
+    print('i')
 
 #teste()           
 master()

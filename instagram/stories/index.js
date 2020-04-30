@@ -1,5 +1,6 @@
 const instory = require('instory')
 let utils = require('../utils')
+const IG_USER = 'albxreche'
 
 let getInstagramStories = async () => {
 
@@ -8,7 +9,7 @@ let getInstagramStories = async () => {
   number = 0,
   storyUrl = '',
   instagramStory = [],
-  stories = await instory('corongabot').then(res => res)
+  stories = await callInstory()
   console.log('stories', stories)
 
   for(value of stories){
@@ -26,9 +27,9 @@ let getInstagramStories = async () => {
         'shortcode': value.shortcode
       }])
     }else{
-      instagramStory = [{
+      instagramStory.push([{
         'duplicate': true
-      }]
+      }])
     }
   }
 
@@ -43,7 +44,24 @@ let getInstagramStories = async () => {
     checkExpiredStories(mediaFromFolder)
     
   return onlyNewStories
+}
 
+let callInstory = async () => {
+  let count = 0,
+  maxTries = 5
+  while(true){
+    try {
+      stories = await instory(IG_USER).then(res => res)
+      return stories
+    }catch(error) {
+      if(++count == maxTries){
+        console.error(error)
+        throw error
+      }else{
+        continue
+      }
+    } 
+  } 
 }
 
 let saveStory = async (url, number, shortcode, expiring_at, path) => {
@@ -55,21 +73,17 @@ let saveStory = async (url, number, shortcode, expiring_at, path) => {
 
 let verifyIfStoryIsDuplicate = async (media, shortcode) => {
   let flag = false
-//  console.log('media', media)
   if(media.length == 0){
     return false
   }else{
-      for(file of media){
-         // console.log(`file ${file} | shortcode ${shortcode}`)
-          if(file.includes(shortcode)){
-          //  console.log(`arquivo duplicado`)
-            flag = true 
-            break  
-          }else{
-            flag = false 
-         //   console.log(`nao tinha ainda o arquivo`)
-          }
+    for(file of media){
+      if(file.includes(shortcode)){
+        flag = true 
+        break  
+      }else{
+        flag = false
       }
+    }
   }
   return flag
 }
@@ -86,15 +100,7 @@ let checkExpiredStories = async mediaFromFolder => {
       console.log('currentFile', file)
       await utils.deleteFileFromFolder(file, 'stories')
     }
-
-    /* expirationDate Sat Sep 15 2018 09:29:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)
-expirationDate Thu Apr 16 2020 02:22:34 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)
-expirationDate Thu Apr 16 2020 05:09:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)        
-expirationDate Thu Apr 16 2020 02:22:14 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00)        
-expirationDate Thu Apr 16 2020 02:22:32 GMT-0400 (GMT-04:00) | currentDate Wed Apr 15 2020 03:25:22 GMT-0400 (GMT-04:00) */
-     
   }
-   
 }
 
 

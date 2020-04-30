@@ -12,12 +12,11 @@ let master = async () => {
         if(igPost.duplicate == false){
             await childProcessInstagramPosts(igPost)
         } 
-        
+        let flag = false
         console.log('no master igstory', igStory)
         for(value of igStory){
             if(value[0].duplicate == false){ 
-                await childProcessInstagramStories(value[0], igPost)
-                console.log('dentro do primeiro for url', value[0].url, 'shortcode: ', value[0].shortcode)
+                await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
             }
         }
 } 
@@ -52,7 +51,9 @@ ${igPost.url} #${BOT_NAME}`
 }
 
 let childProcessInstagramStories = async (igStory, igPost) => {
-    let tweet = ''
+    return new Promise(function(resolve, reject) {
+        let tweet = '',
+        flag = false
         tweet = `[STORIES] ${igPost.username}: 
 
 ${igStory.storyUrl} #${BOT_NAME}`
@@ -69,7 +70,10 @@ ${igStory.storyUrl} #${BOT_NAME}`
 
         child.on('close', (code) => {
             console.log(`child process exited with code ${code}`)
+            flag = true
+            resolve(flag)
         })   
+    })
 }
 
 

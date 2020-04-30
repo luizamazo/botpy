@@ -5,17 +5,20 @@ let utils = require('../utils');
 let fs = require('fs');
 request = require('request');
 
+let IG_USER = 'corongabot'
+
 let getInstagramPosts = async () => {
     
-    let response = await instagramPosts('corongabot', {count: 3}),
-    responseTypename = response[0].__typename,
-    responseUrl = response[0].url,
-    shortcode = response[0].shortcode,
-    username = response[0].username,
-    isPostDuplicate = false,
-    instagramPost = {},
-    mediaFromFolder = await utils.getMediaFromFolder('posts'),
-    count = ''
+    let response = await callInstaPosts(),
+        responseIndex = response[0]
+        responseTypename = responseIndex.__typename,
+        responseUrl = responseIndex.url,
+        shortcode = responseIndex.shortcode,
+        username = responseIndex.username,
+        isPostDuplicate = false,
+        instagramPost = {},
+        mediaFromFolder = await utils.getMediaFromFolder('posts'),
+        count = ''
   
     if(responseTypename != 'GraphSidecar'){
       shortcode = shortcode.split()
@@ -32,9 +35,9 @@ let getInstagramPosts = async () => {
     if(isPostDuplicate == false){ 
       if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
       let media = await saveMedia(response),
-      text = response[0].text,
-      time = response[0].time,
-      typename = response[0].__typename
+      text = responseIndex.text,
+      time = responseIndex.time,
+      typename = responseIndex.__typename
       text = text.replace('@', '@.')
       mediaFromFolder = await utils.getMediaFromFolder('posts'),
       count = countMediaType(mediaFromFolder)
@@ -56,15 +59,34 @@ let getInstagramPosts = async () => {
         'username': username
       }]
     }
-    
     return instagramPost
 }
 
+
+let callInstaPosts = async () => {
+  let count = 0,
+  maxTries = 5
+  while(true){
+    try {
+      instaPosts = await instagramPosts(IG_USER, {count: 1})
+      return instaPosts
+    }catch(error) {
+      if(++count == maxTries){
+        console.error(error)
+        throw error
+      }else{
+        continue
+      }
+    } 
+  } 
+}
+
 let saveMedia = async (response) => {
-  let responseTypename = response[0].__typename
-  let responseUrl = response[0].url
-  let shortcodeOrder = []
-  let singleMedia = ''
+  let responseIndex = response[0],
+      responseTypename = responseIndex.__typename,
+      responseUrl = responseIndex.url,
+      shortcodeOrder = [],
+      singleMedia = ''
 
   if(responseTypename == 'GraphSidecar'){
    await convertGraphSideCar(responseUrl).then(shortcode => {
