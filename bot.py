@@ -48,6 +48,7 @@ def getFileFromMediaFolder(folder, fileName):
             print('file', f)
             if fileName in f:
                 mediaPath = os.path.join(dirpath, f)
+                
     return mediaPath
 
 def master():
@@ -64,19 +65,10 @@ def master():
         print('media', media)
         tweetPosts(media)
     else:
-        storyName = sys.argv[2]
-        print('storyName do py', storyName)
-        filePath = getFileFromMediaFolder(folder, storyName)
-        mediaUploaded = api.upload_chunked(filePath)
-        media_ids = [mediaUploaded.media_id_string]      
-        print('filePath', filePath)
-       
-        sentTweet = api.update_status(
-            status = tweet, 
-            media_ids = media_ids
-        )
-        
-        print('tweetou vai pro proximo')
+        media = getMediaFromFolder(folder)
+        stories = sys.argv[2]
+        print('stories', stories)
+        tweetStories(stories)
 
 def tweetPosts(media):
     mediaIdImages = []
@@ -165,7 +157,13 @@ def tweetPosts(media):
                             auto_populate_reply_metadata = True,
                             media_ids = mediaIdImages
                         )
-                
+
+def tweetStories(stories):
+    print(stories)
+    for index, value in stories.iteritems():
+            print('value', value)
+           
+               
 def verifyTweetOrder(tweet_id, mediaId):
     if tweet_id == '': 
         sentTweet = api.update_status(

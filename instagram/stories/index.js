@@ -8,7 +8,7 @@ let getInstagramStories = async () => {
   number = 0,
   storyUrl = '',
   instagramStory = [],
-  stories = await instory('corongabot').then(res => res)
+  stories = await instory('roses_are_rosie').then(res => res)
   console.log('stories', stories)
 
   for(value of stories){
@@ -20,11 +20,11 @@ let getInstagramStories = async () => {
     if(isStoryDuplicate == false){
       let saved = await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
       console.log('saved', saved)
-      instagramStory.push([{
+      instagramStory.push({
         'duplicate': false,
         'storyUrl': value.url,
         'shortcode': value.shortcode
-      }])
+      })
     }else{
       instagramStory = [{
         'duplicate': true

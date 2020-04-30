@@ -1,3 +1,4 @@
+fs = require('fs')
 instagramPost = require('./instagram/posts/index.js')
 instagramStory = require('./instagram/stories/index.js')
 const { spawn } = require('child_process')
@@ -12,14 +13,19 @@ let master = async () => {
         if(igPost.duplicate == false){
             await childProcessInstagramPosts(igPost)
         } 
+
+        console.log('no if', igStory[0].duplicate)
         
-        console.log('no master igstory', igStory)
-        for(value of igStory){
+        if(igStory[0].duplicate == false){
+            
+            await childProcessInstagramStories(igStory, igPost)
+        }
+      /*   for(value of igStory){
             if(value[0].duplicate == false){ 
                 await childProcessInstagramStories(value[0], igPost)
                 console.log('dentro do primeiro for url', value[0].url, 'shortcode: ', value[0].shortcode)
             }
-        }
+        } */
 } 
 
 let childProcessInstagramPosts = async igPost => {
@@ -55,9 +61,23 @@ let childProcessInstagramStories = async (igStory, igPost) => {
     let tweet = ''
         tweet = `[STORIES] ${igPost.username}: 
 
-${igStory.storyUrl} #${BOT_NAME}`
-        console.log('shortcode do js',  igStory.shortcode)
-        const child = spawn('python', ['bot.py', tweet, igStory.shortcode])
+$STORYURL$ #${BOT_NAME}`,
+        json_igStory = ''
+
+        for(value in igStory){
+            json_igStory = JSON.stringify(igStory)
+            console.log(json_igStory)
+        }
+
+        fs.writeFile( __dirname + '/media/stories/igStories.json', json_igStory, err => {
+            if (err) {
+              console.error(err)
+              return
+            }
+            console.log('deu')
+          }) 
+    
+      /*   const child = spawn('python', ['bot.py', tweet])
 
         child.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`)
@@ -69,7 +89,7 @@ ${igStory.storyUrl} #${BOT_NAME}`
 
         child.on('close', (code) => {
             console.log(`child process exited with code ${code}`)
-        })   
+        })    */
 }
 
 
