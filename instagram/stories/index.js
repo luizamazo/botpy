@@ -51,6 +51,7 @@ let callInstory = async () => {
   maxTries = 5
   while(true){
     try {
+      console.log('entrou no try do call instory')
       stories = await instory(IG_USER).then(res => res)
       return stories
     }catch(error) {

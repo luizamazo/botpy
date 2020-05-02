@@ -5,7 +5,7 @@ let utils = require('../utils');
 let fs = require('fs');
 request = require('request');
 
-let IG_USER = 'jennierubyjane'
+let IG_USER = 'corongabot'
 
 let getInstagramPosts = async () => {
     
@@ -23,29 +23,28 @@ let getInstagramPosts = async () => {
     if(responseTypename != 'GraphSidecar'){
       shortcode = shortcode.split()
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
-      console.log('is duplicate non graphsidecar', isPostDuplicate)
+      console.log('Is Non GraphSideCar duplicate?', isPostDuplicate)
     }else{
       await convertGraphSideCar(responseUrl).then(res => {
         shortcode = res
       })
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
-      console.log('is duplicate graphsidecar', isPostDuplicate)
+      console.log('Is GraphSideCar duplicate?', isPostDuplicate)
     }
-    //aqui faço verificaçao
+    
     if(isPostDuplicate == false){ 
       if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
-      let media = await saveMedia(response),
+      await saveMedia(response),
       text = responseIndex.text,
       time = responseIndex.time,
       typename = responseIndex.__typename
       text = text.replace(/@/g, '@.')
       mediaFromFolder = await utils.getMediaFromFolder('posts'),
       count = countMediaType(mediaFromFolder)
-    //console.log('response aki', response[0])
+
       instagramPost = [{
         'duplicate': false,
         'typename': typename,
-        'media': media,
         'username': username,
         'text': text,
         'time': time,
@@ -68,9 +67,8 @@ let callInstaPosts = async () => {
   maxTries = 5
   while(true){
     try {
-      console.log('entrou no tr do call instapo sts')
+      console.log('Entered try -> callInstaPosts')
       instaPosts = await instagramPosts(IG_USER, {count: 1})
-      console.log('Instaposts', instaPosts)
       return instaPosts
     }catch(error) {
       if(++count == maxTries){
@@ -81,29 +79,22 @@ let callInstaPosts = async () => {
       }
     } 
   } 
-}
+} 
 
-let saveMedia = async (response) => {
+let saveMedia = async response => {
   let responseIndex = response[0],
       responseTypename = responseIndex.__typename,
-      responseUrl = responseIndex.url,
-      shortcodeOrder = [],
-      singleMedia = ''
+      responseUrl = responseIndex.url
 
   if(responseTypename == 'GraphSidecar'){
    await convertGraphSideCar(responseUrl).then(shortcode => {
     shortcodeOrder = shortcode
    })
   }else{
-    console.log('single media')
     singleMedia= await save(responseUrl, '././media/posts/').then(res => {
-      let fileName = res.url 
-      fileName = fileName.replace('https://www.instagram.com/p/', '')
-      fileName = fileName.split()
-      return fileName
+      console.log('IG Post has a single media and it was saved')
     })
   }
-  return shortcodeOrder.length == 0 ? singleMedia : shortcodeOrder
 }
 
 let convertGraphSideCar = async responseUrl => {
@@ -128,21 +119,17 @@ let convertGraphSideCar = async responseUrl => {
         for(value of urlShortcode){  
           number++
           utils.download(value.url, `${number} - ${value.shortcode}`, path).then(res => {
-            console.log('chamou a utils download')
+            console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
           })
         } 
-       
-       shortcodeOrder = orderMedia(urlShortcode)
-       return shortcodeOrder
       }).catch(error => {
-        console.log(error)
+        console.error(error)
       })
 }
 
 let getUrlShortCode = node => {
   let uri = []
   for(child of node){
-   
     if(child.is_video){
       uri.push({
         'url': child.video_url,
@@ -162,7 +149,8 @@ let getUrlShortCode = node => {
 
 let verifyIfPostIsDuplicate = async (media, shortcode) => {
   let flag = false
-  console.log('verifyIfPostIsDuplicate shortcode', shortcode)
+  console.log(`Verifying if post is duplicate...
+  Current media from the folder ->`, media)
   if(media.length == 0){
     return false
   }else{
@@ -170,28 +158,20 @@ let verifyIfPostIsDuplicate = async (media, shortcode) => {
       for(file of media){
         if(shortcode.length != 0){
           let firstElement = shortcode[0]
-          console.log('shortcode', shortcode)
           if(file.includes(firstElement)){
-            console.log(`arquivo duplicado, file ${file} | firstElement ${firstElement}`)
+            console.log(`Duplicate media, file ${file}`)
             flag = true 
             shortcode.shift()
           }else{
             flag = false 
             shortcode.shift()
-            console.log('nao tinha ainda o arquivo')
+            console.log('File didnt exist before')
           }
         }
       }
     }
   }
   return flag
-}
-
-let orderMedia = urlShortcode => {
-  let shortcodeOrder = urlShortcode.map(value => {
-    return value.shortcode
-  })
-  return shortcodeOrder
 }
 
 let countMediaType = mediaFromFolder => {
@@ -215,7 +195,7 @@ let countMediaType = mediaFromFolder => {
   }else if(countVideos == 0 && countPictures > 1){
     count = `|${countPictures}P`
   }
-
+  console.log('Media Count: Post has', count)
   return count
 }
 

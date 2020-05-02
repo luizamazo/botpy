@@ -58,10 +58,7 @@ def master():
         mediaUploaded = api.upload_chunked(filePath)
         media_ids = [mediaUploaded.media_id_string]      
         print('filePath', filePath)
-        #sentTweet = api.update_status(
-         #   status = tweet, 
-        #    media_ids = media_ids
-       # )
+       # sentTweet = sendTweet(media_ids)
         print('tweetou vai pro proximo')
 
 def tweetPosts(media):
@@ -76,18 +73,10 @@ def tweetPosts(media):
                 if len(mediaIdImages) > 0 and len(mediaIdImages) < 4:
                     print('eh video, mas tem img antes de 4, primeiro da thread')
                     if tweet_id == '':
-                        sentTweet = api.update_status(
-                            status = tweet, 
-                            media_ids = mediaIdImages
-                        )
+                        sentTweet = sendTweet(mediaIdImages)
                     else: 
                         print('tem < 4 antes desse video, faz parte de thread')
-                        sentTweet = api.update_status(
-                            status = tweet, 
-                            in_reply_to_status_id = tweet_id,
-                            auto_populate_reply_metadata = True,
-                            media_ids = mediaIdImages
-                        ) 
+                        sentTweet = sendReply(tweet_id, mediaIdImages)
                         
                     tweet_id = sentTweet.id_str
                     mediaIdImages = []
@@ -96,18 +85,11 @@ def tweetPosts(media):
                 
                 if('1 -' in mediaPath):
                     print('eh o primeiro video da sequencia')
-                    sentTweet = api.update_status(
-                        status = tweet,
-                        media_ids = mediaIdVideo
-                    )
+                    sentTweet = sendTweet(mediaIdVideo)
                 else:
                     print('video faz parte de thread')
-                    sentTweet = api.update_status(
-                        status = tweet, 
-                        in_reply_to_status_id = tweet_id,
-                        auto_populate_reply_metadata = True,
-                        media_ids = mediaIdVideo
-                    )  
+                    sentTweet = sendReply(tweet_id, mediaIdVideo)
+                    
                 tweet_id = sentTweet.id_str
                 mediaIdVideo = []
             else:
@@ -119,18 +101,11 @@ def tweetPosts(media):
                 print('completou 4 imagens')
                 if tweet_id == '':
                     print('quatro imgs sao as primeiras')
-                    sentTweet = api.update_status(
-                        status = tweet, 
-                        media_ids = mediaIdImages
-                    )
+                    sentTweet = sendTweet(mediaIdImages)
                 else: 
                     print('quatro imgs fazem parte de thread')
-                    sentTweet = api.update_status(
-                        status = tweet, 
-                        in_reply_to_status_id = tweet_id,
-                        auto_populate_reply_metadata = True,
-                        media_ids = mediaIdImages
-                    )
+                    sentTweet = sendReply(tweet_id, mediaIdImages)
+                    
                 tweet_id = sentTweet.id_str
                 mediaIdImages = []
 
@@ -139,18 +114,46 @@ def tweetPosts(media):
                 if mediaIdImages != []: 
                     if tweet_id == '':
                         print('posta o restante como primeiro tweet')
-                        sentTweet = api.update_status(
-                            status = tweet, 
-                            media_ids = mediaIdImages
-                    )
+                        sentTweet = sendTweet(mediaIdImages)
                     else: 
                         print('posta o restante que faz parte de thread')
-                        sentTweet = api.update_status(
-                            status = tweet, 
-                            in_reply_to_status_id = tweet_id,
-                            auto_populate_reply_metadata = True,
-                            media_ids = mediaIdImages
-                        )
+                        sentTweet = sendReply(tweet_id, mediaIdImages)
+                        
+def sendTweet(media_ids):
+    count = 0
+    maxTries = 5
+    while True: 
+        try:
+            print('entrou no try do sendtweet')
+            sent_tweet = api.update_status(
+                status = tweet,
+                media_ids = media_ids
+            )
+            return sent_tweet
+        except tweepy.TweepError as error:
+            count += 1
+            print('Error sending tweet ->', error)
+            if count == maxTries:
+                raise
+
+def sendReply(previous_tweet_id, media_ids):
+    count = 0
+    maxTries = 5
+    while True: 
+        try:
+            print('entrou no try do sendreply')
+            sent_tweet = api.update_status(
+                status = tweet, 
+                in_reply_to_status_id = previous_tweet_id,
+                auto_populate_reply_metadata = True,
+                media_ids = media_ids
+            )
+            return sent_tweet
+        except tweepy.TweepError as error:
+            count += 1
+            print('Error sending tweet ->', error)
+            if count == maxTries:
+                raise
                 
 def verifyTweetOrder(tweet_id, mediaId):
     if tweet_id == '': 

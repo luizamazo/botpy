@@ -9,28 +9,35 @@ let master = async () => {
         async () => {
           await callMaster()
         },
-        30000
-      )    
+        1000
+      )
+       
 } 
 
 let callMaster = async () => {
     
     igPost = await instagramPost.getInstagramPosts(),
-    igPost = igPost[0]
-    console.log('Latest IGPost object:', igPost)
-    
-    /* if(igPost.duplicate == false){
-        await childProcessInstagramPosts(igPost)
-    } 
+    igStory = await instagramStory.getInstagramStories(),
+    igPost = igPost[0],
+    count = 0,
+    flag = false
 
-    let igStory = await instagramStory.getInstagramStories()
-
-    for(value of igStory){ 
-        if(value[0].duplicate == false){ 
-            await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
-        }
-    }   */
-   
+    return new Promise(async function(resolve, reject) {
+        if(igPost.duplicate == false){
+            flag = await childProcessInstagramPosts(igPost)
+            flag == true ? (count++, flag = false) : count
+        } 
+        console.log('no master igstory', igStory)
+        for(value of igStory){
+            if(value[0].duplicate == false){ 
+                flag = await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
+                flag == true ? (count++, flag = false) : count
+            }
+         }  
+         if(count == 2){
+             resolve()
+         }
+    })
 }
 
 let childProcessInstagramPosts = async igPost => {
@@ -94,4 +101,37 @@ ${igStory.storyUrl} #${BOT_NAME}`
     })
 }
 
+
+function encode_utf8(string){
+  return unescape(encodeURIComponent(string))
+}
+
+
+function toUnicode(str) {
+	return str.split('').map(function (value, index, array) {
+		var temp = value.charCodeAt(0).toString(16).toUpperCase()
+		if (temp.length > 2) {
+			return '\\u' + temp;
+		}
+		return value;
+	}).join('')
+}
+
 master()
+
+/*const { spawn } = require('child_process');
+const oi = ['arguumento', 'oaoaoa']
+const cuzao = spawn('python', ['bot.py', oi]);
+
+cuzao.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+});
+
+cuzao.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+});
+
+cuzao.on('close', (code) => {
+    console.log(`child process exited with code ${code}`);
+});
+*/
