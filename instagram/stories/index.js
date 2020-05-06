@@ -1,6 +1,6 @@
 const instory = require('instory')
 let utils = require('../utils')
-const IG_USER = 'albxreche'
+const IG_USER = 'corongabot'
 
 let getInstagramStories = async () => {
 
@@ -10,17 +10,15 @@ let getInstagramStories = async () => {
   storyUrl = '',
   instagramStory = [],
   stories = await callInstory()
-  console.log('stories', stories)
 
   for(value of stories){
     value = value[0]
     //console.log('res', new Date(value.expiring_at * 1000))
     isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
-    console.log('is story duplicate on return', isStoryDuplicate)
+    console.log('Is story duplicate?', isStoryDuplicate)
     number++
     if(isStoryDuplicate == false){
-      let saved = await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
-      console.log('saved', saved)
+      await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
       instagramStory.push([{
         'duplicate': false,
         'storyUrl': value.url,
@@ -65,8 +63,8 @@ let callInstory = async () => {
 }
 
 let saveStory = async (url, number, shortcode, expiring_at, path) => {
-  return utils.download(url, `${number} - ${shortcode} [${expiring_at}]`, path).then(res => {
-    console.log('isStoryDuplicate = false, logo fez download')
+  return await utils.download(url, `${number} - ${shortcode} [${expiring_at}]`, path).then(res => {
+    console.log('Story isnt a duplicate, it was downloaded and saved')
     return 'ok'
   })
 }
@@ -95,9 +93,8 @@ let checkExpiredStories = async mediaFromFolder => {
     result = file.match(regex).toString().replace('[', '').replace(']', '')
     expirationDate = new Date(result * 1000),
     currentDate = new Date()
-    console.log(`expirationDate ${expirationDate} | currentDate ${currentDate}`)
+    console.log(`Story expiration date -> ${expirationDate} | Current Date -> ${currentDate}`)
     if(currentDate >= expirationDate){
-      console.log('currentFile', file)
       await utils.deleteFileFromFolder(file, 'stories')
     }
   }

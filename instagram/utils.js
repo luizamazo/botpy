@@ -44,7 +44,7 @@ let deleteMediaFromFolder = async (media, folder) => {
         console.log('ERROR: unable to delete media ' + imagePath);
       }
       else{
-        console.log('media ' + imagePath + ' was deleted');
+        console.log(imagePath + ' was deleted');
       }
     })
   }
@@ -53,7 +53,6 @@ let deleteMediaFromFolder = async (media, folder) => {
 let deleteFileFromFolder = async (file, folder) => {
   let mediaFromFolder = await getMediaFromFolder(folder)
   for(media of mediaFromFolder){
-    console.log(`file to delete ${file} | current media ${media}`)
     if(media == file){
       let imagePath = __dirname + './../media/' + folder + '/' + file
       fs.unlink(imagePath, function(err){
@@ -61,7 +60,7 @@ let deleteFileFromFolder = async (file, folder) => {
           console.log('ERROR: unable to delete media ' + imagePath);
         }
         else{
-          console.log('file ' + imagePath + ' was deleted');
+          console.log(imagePath + ' was deleted');
         }
       })
       break
