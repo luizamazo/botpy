@@ -129,7 +129,7 @@ let convertGraphSideCar = async responseUrl => {
           urlShortcode = getUrlShortCode(node)
         }
         let number = 0
-        path = '././media/posts/'
+        path = '../../media/posts/'
         for(value of urlShortcode){  
           number++
           await utils.download(value.url, `${number} - ${value.shortcode}`, path).then(res => {

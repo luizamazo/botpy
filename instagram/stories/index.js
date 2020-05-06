@@ -5,7 +5,7 @@ const IG_USER = 'corongabot'
 let getInstagramStories = async () => {
 
   let mediaFromFolder = await utils.getMediaFromFolder('stories'),
-  path = '././media/stories/',
+  path = '../../media/stories/',
   number = 0,
   storyUrl = '',
   instagramStory = [],
