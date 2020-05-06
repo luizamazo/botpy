@@ -26,7 +26,7 @@ def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
     print('PY: getMediaFromFolder ->', mediaFolder)
-    media_list = []  
+    media_list = []   
     
     for dirpath, dirnames, files in os.walk(mediaFolder):
         for f in files:
