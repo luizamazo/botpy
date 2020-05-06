@@ -1,6 +1,6 @@
 const instory = require('instory')
 let utils = require('../utils')
-const IG_USER = 'corongabot'
+const IG_USER = 'dualipa'
 
 let getInstagramStories = async () => {
 
