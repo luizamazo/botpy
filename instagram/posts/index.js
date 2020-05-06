@@ -5,7 +5,7 @@ let utils = require('../utils');
 let fs = require('fs');
 request = require('request');
 
-let IG_USER = 'dualipa'
+let IG_USER = 'corongabot'
 
 let getInstagramPosts = async () => {
     
