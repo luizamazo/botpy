@@ -101,7 +101,7 @@ let saveMedia = async (response) => {
    })
   }else{
     console.log('IG Post has a single media and it was saved')
-    singleMedia= await save(responseUrl, '././media/posts/').then(res => {
+    singleMedia= await save(responseUrl, '../../media/posts/').then(res => {
       console.log('res', res)
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
