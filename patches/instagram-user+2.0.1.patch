@@ -1,8 +1,23 @@
 diff --git a/node_modules/instagram-user/index.js b/node_modules/instagram-user/index.js
-index 0360c4f..dbc3883 100644
+index 0360c4f..ef1f20a 100644
 --- a/node_modules/instagram-user/index.js
 +++ b/node_modules/instagram-user/index.js
-@@ -25,10 +25,7 @@ module.exports = async username => {
+@@ -9,7 +9,13 @@ module.exports = async username => {
+ 
+ 	try {
+ 		const url = `https://instagram.com/${username}`;
+-		const {graphql: {user}} = await got(url, {searchParams: {__a: 1}}).json();
++		const user = await got(url, {searchParams: {__a: 1}}).then(res => {
++			let teste = JSON.parse(res.body)
++			return teste.graphql.user
++		}).catch(error => {
++			console.error(error)
++		})
++
+ 		const email = getEmails(user.biography).values().next().value || '';
+ 
+ 		return {
+@@ -25,10 +31,7 @@ module.exports = async username => {
  			website: user.external_url
  		};
  	} catch (error) {
