@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "cd ./node_modules/instory && npm install"
+    "postinstall": "cd ./node_modules/instory && npm install && cd ./node_modules/instagram-posts && npm install"
   },
   "author": "Luiza Mazo",
   "license": "ISC",
