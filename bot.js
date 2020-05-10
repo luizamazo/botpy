@@ -1,5 +1,6 @@
 instagramPost = require('./instagram/posts/index.js')
 instagramStory = require('./instagram/stories/index.js')
+require('dotenv').config()
 const { setIntervalAsync } = require('set-interval-async/dynamic')
 const { spawn } = require('child_process')
 const BOT_NAME = 'botpy'
