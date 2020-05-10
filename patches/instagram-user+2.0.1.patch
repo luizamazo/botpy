@@ -1,0 +1,16 @@
+diff --git a/node_modules/instagram-user/index.js b/node_modules/instagram-user/index.js
+index 0360c4f..dbc3883 100644
+--- a/node_modules/instagram-user/index.js
++++ b/node_modules/instagram-user/index.js
+@@ -25,10 +25,7 @@ module.exports = async username => {
+ 			website: user.external_url
+ 		};
+ 	} catch (error) {
+-		if (error.response.statusCode === 404) {
+-			error.message = `User "${username}" not found`;
+-		}
+-
++		console.error(error)
+ 		throw error;
+ 	}
+ };
