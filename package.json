@@ -6,14 +6,14 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "cd ./node_modules/instory && npm install && cd ./node_modules/instagram-posts && npm install"
+    "postinstall": "cd ./node_modules/instory && npm install"
   },
   "author": "Luiza Mazo",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
-    "instagram-posts": "^2.2.0",
+    "instagram-posts": "https://github.com/luizamazo/instagram-posts.git",
     "instagram-save": "^1.3.2",
     "instory": "https://github.com/luizamazo/instory.git",
     "set-interval-async": "1.0.32"
