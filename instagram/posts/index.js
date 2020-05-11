@@ -3,6 +3,7 @@ const save = require('instagram-save');
 const axios = require('axios'); 
 let utils = require('../utils');
 let fs = require('fs');
+let path = require('path');
 request = require('request');
 
 let IG_USER = 'renebaebae'
@@ -119,7 +120,10 @@ let convertGraphSideCar = async responseUrl => {
     return await axios({url: responseUrl, method: 'GET' })
       .then(async response => {
         let body = response.data
-        let media = body.graphql.shortcode_media
+        let media = body.graphql.shortcode_media,
+            number = 0,
+            filePath = ''
+
         media = Object.entries(media.edge_sidecar_to_children)
 
         for(const[key, value] of media) {
@@ -128,11 +132,11 @@ let convertGraphSideCar = async responseUrl => {
           })
           urlShortcode = getUrlShortCode(node)
         }
-        let number = 0
-        path = '../../media/posts/'
+        
         for(value of urlShortcode){  
           number++
-          await utils.download(value.url, `${number} - ${value.shortcode}`, path).then(res => {
+          filePath = path.resolve('.', 'media', 'posts', `${number} - ${value.shortcode}`)
+          await utils.download(value.url, filePath).then(res => {
             console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
           })
         } 

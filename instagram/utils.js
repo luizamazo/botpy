@@ -1,7 +1,7 @@
 let fs = require('fs'),
 request = require('request');
 
-let download = async (uri, filename, path) => {
+let download = async (uri, path) => {
   return new Promise(function(resolve, reject) {
     request.head(uri, function(err, res, body){
      // console.log('content-type:', res.headers['content-type'])
@@ -11,8 +11,8 @@ let download = async (uri, filename, path) => {
       }else{ 
         let type =  res.headers['content-type']
         type = type.substring(type.indexOf("/") + 1)
-       
-        request(uri).pipe(fs.createWriteStream(`${path}` + [filename + '.' + type])).on('finish', resolve)
+        console.log('no utils', path)
+        request(uri).pipe(fs.createWriteStream(`${path}.${type}`)).on('finish', resolve)
       }
     })
   }
