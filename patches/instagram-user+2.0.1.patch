@@ -1,17 +1,27 @@
 diff --git a/node_modules/instagram-user/index.js b/node_modules/instagram-user/index.js
-index 0360c4f..82b3bd9 100644
+index 0360c4f..0d3ab53 100644
 --- a/node_modules/instagram-user/index.js
 +++ b/node_modules/instagram-user/index.js
-@@ -8,8 +8,14 @@ module.exports = async username => {
+@@ -1,6 +1,6 @@
+ 'use strict';
+ const getEmails = require('get-emails');
+-const got = require('got');
++const axios = require('axios');
+ 
+ module.exports = async username => {
+ 	if (typeof username !== 'string') {
+@@ -8,8 +8,16 @@ module.exports = async username => {
  	}
  
  	try {
 -		const url = `https://instagram.com/${username}`;
 -		const {graphql: {user}} = await got(url, {searchParams: {__a: 1}}).json();
 +		const url = `https://instagram.com/${username}/?__a=1`;
-+		const user = await got(url).then(res => {
-+			let teste = JSON.parse(res.body)
-+			return teste.graphql.user
++		const user = await axios({url: url, method: 'GET' })
++		.then(async response =>{
++			return response.data.graphql.user
++		//	let teste = JSON.parse(res.body)
++		//	return teste.graphql.user
 +		}).catch(error => {
 +			console.error('esse erro eh novo', error)
 +		})
@@ -19,7 +29,7 @@ index 0360c4f..82b3bd9 100644
  		const email = getEmails(user.biography).values().next().value || '';
  
  		return {
-@@ -25,10 +31,7 @@ module.exports = async username => {
+@@ -25,10 +33,7 @@ module.exports = async username => {
  			website: user.external_url
  		};
  	} catch (error) {
