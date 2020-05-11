@@ -102,7 +102,8 @@ let saveMedia = async (response) => {
    })
   }else{
     console.log('IG Post has a single media and it was saved')
-    singleMedia= await save(responseUrl, '../../media/posts/').then(res => {
+    filePath = path.resolve('media', 'posts')
+    singleMedia= await save(responseUrl, filePath).then(res => {
       console.log('res', res)
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
@@ -135,6 +136,7 @@ let convertGraphSideCar = async responseUrl => {
         
         for(value of urlShortcode){  
           number++
+          console.log('hehe', path.resolve('media', 'posts', `${number} - ${value.shortcode}`))
           filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
           await utils.download(value.url, filePath).then(res => {
             console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
