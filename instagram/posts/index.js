@@ -135,7 +135,7 @@ let convertGraphSideCar = async responseUrl => {
         
         for(value of urlShortcode){  
           number++
-          filePath = path.resolve('.', 'media', 'posts', `${number} - ${value.shortcode}`)
+          filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
           await utils.download(value.url, filePath).then(res => {
             console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
           })
