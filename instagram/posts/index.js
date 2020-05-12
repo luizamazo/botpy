@@ -102,14 +102,14 @@ let saveMedia = async (response) => {
    })
   }else{
     console.log('IG Post has a single media and it was saved')
-  //  filePath = path.resolve('media', 'posts')
+    /* filePath = path.resolve('media', 'posts')
     singleMedia= await save(responseUrl, filePath).then(res => {
       console.log('res', res)
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
       fileName = fileName.split()
       return fileName
-    })
+    }) */
   }
   return shortcodeOrder.length == 0 ? singleMedia : shortcodeOrder
 }
@@ -140,10 +140,10 @@ let convertGraphSideCar = async responseUrl => {
          // filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
         // filePath = path.join(__dirname, 'media', `${number} - ${value.shortcode}`)
         console.log('desgraçaaaaaa')
-        filePath = `./${number} - ${value.shortcode}`
+        /* filePath = `./${number} - ${value.shortcode}`
           await utils.download(value.url, filePath).then(res => {
             console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
-          })
+          }) */
         } 
        
        shortcodeOrder = orderMedia(urlShortcode)
