@@ -25,12 +25,13 @@ elif "STORIES" in tweet:
 def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
-    print('PY: getMediaFromFolder ->', mediaFolder)
+    print('PY: Getting media from folder ->', mediaFolder)
     media_list = []  
     
     for dirpath, dirnames, files in os.walk(mediaFolder):
         for f in files:
             media_list.append(os.path.join(dirpath, f))
+    print('PY: mediaFromFolder ->', media_list)
     return media_list
 
 def getFileFromMediaFolder(folder, fileName):
@@ -45,8 +46,6 @@ def getFileFromMediaFolder(folder, fileName):
     return mediaPath
 
 def master():
-
-    print('folder', folder)
     
     if folder == "posts":
         media = getMediaFromFolder(folder)
@@ -65,6 +64,7 @@ def tweetPosts(media):
     tweet_id = ''
     for index, path in enumerate(media, start = 1):
             mediaPath = path
+            print('PY: Method Tweet Posts -> MediaPath ->', mediaPath)
             mediaUploaded = api.upload_chunked(mediaPath)
        
             if hasattr(mediaUploaded, 'video'):  
