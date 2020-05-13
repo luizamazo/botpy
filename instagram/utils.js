@@ -1,7 +1,8 @@
 let fs = require('fs'),
 request = require('request');
+let path = require('path');
 
-let download = async (uri, path) => {
+let download = async (uri, filePath) => {
   return new Promise(function(resolve, reject) {
     request.head(uri, function(err, res, body){
      // console.log('content-type:', res.headers['content-type'])
@@ -11,8 +12,8 @@ let download = async (uri, path) => {
       }else{ 
         let type =  res.headers['content-type']
         type = type.substring(type.indexOf("/") + 1)
-        console.log('no utils', path)
-        request(uri).pipe(fs.createWriteStream(`${path}.${type}`)).on('finish', resolve)
+    
+        request(uri).pipe(fs.createWriteStream(`${filePath}.${type}`)).on('finish', resolve)
       }
     })
   }
@@ -20,7 +21,8 @@ let download = async (uri, path) => {
 
 let getMediaFromFolder = async (folder) => {
   return new Promise(function(resolve, reject) {
-    fs.readdir(__dirname + './../media/' + folder + '/', function(err, files){
+    let filePath = path.resolve('media', folder)
+    fs.readdir(filePath, function(err, files){
       let media = []
       if(err){
           console.log(err)
@@ -32,13 +34,13 @@ let getMediaFromFolder = async (folder) => {
           resolve(media)
       }
     })
-  })
+  }) 
 }
 
 let deleteMediaFromFolder = async (media, folder) => {
   console.log('media from deleteMediaFromFolder', media)
   for(file of media){
-    imagePath = __dirname + './../media/' + folder + '/' + file
+    imagePath = path.resolve('media', folder, file)
     fs.unlink(imagePath, function(err){
       if (err){
         console.log('ERROR: unable to delete media ' + imagePath);
@@ -54,7 +56,7 @@ let deleteFileFromFolder = async (file, folder) => {
   let mediaFromFolder = await getMediaFromFolder(folder)
   for(media of mediaFromFolder){
     if(media == file){
-      let imagePath = __dirname + './../media/' + folder + '/' + file
+      let imagePath = path.resolve('media', folder, file)
       fs.unlink(imagePath, function(err){
         if (err){
           console.log('ERROR: unable to delete media ' + imagePath);

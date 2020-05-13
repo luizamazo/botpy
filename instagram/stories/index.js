@@ -1,11 +1,13 @@
 const instory = require('instory')
 let utils = require('../utils')
+let path = require('path');
 const IG_USER = 'albxreche'
+
 
 let getInstagramStories = async () => {
 
-  let mediaFromFolder = await utils.getMediaFromFolder('stories'),
-  path = '../../media/stories/',
+  let mediaFromFolder = await utils.getMediaFromFolder('stories')
+  let filePath = path.resolve('media', 'stories'),
   number = 0,
   storyUrl = '',
   instagramStory = [],
@@ -18,7 +20,7 @@ let getInstagramStories = async () => {
     console.log('Is story duplicate?', isStoryDuplicate)
     number++
     if(isStoryDuplicate == false){
-      await saveStory(value.url, number, value.shortcode, value.expiring_at, path)
+      await saveStory(value.url, number, value.shortcode, value.expiring_at)
       instagramStory.push([{
         'duplicate': false,
         'storyUrl': value.url,
@@ -62,8 +64,9 @@ let callInstory = async () => {
   } 
 }
 
-let saveStory = async (url, number, shortcode, expiring_at, path) => {
-  return await utils.download(url, `${number} - ${shortcode} [${expiring_at}]`, path).then(res => {
+let saveStory = async (url, number, shortcode, expiring_at) => {
+  let filePath = path.resolve('media', 'stories', `${number} - ${shortcode} [${expiring_at}]`)
+  return await utils.download(url, filePath).then(res => {
     console.log('Story isnt a duplicate, it was downloaded and saved')
     return 'ok'
   })

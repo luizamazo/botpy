@@ -6,7 +6,7 @@ let fs = require('fs');
 let path = require('path');
 request = require('request');
 
-let IG_USER = 'renebaebae'
+let IG_USER = 'corongabot'
 
 let getInstagramPosts = async () => {
     
@@ -21,8 +21,8 @@ let getInstagramPosts = async () => {
         mediaFromFolder = '',
         count = ''
 
-        mediaFromFolder = await utils.getMediaFromFolder('posts')
-  
+    mediaFromFolder = await utils.getMediaFromFolder('posts')
+
     if(responseTypename != 'GraphSidecar'){
       shortcode = shortcode.split()
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode)
@@ -38,7 +38,7 @@ let getInstagramPosts = async () => {
     }
   
     if(isPostDuplicate == false){ 
-    //  if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
+      if(mediaFromFolder.length >= 1) utils.deleteMediaFromFolder(mediaFromFolder, 'posts')
       let media = await saveMedia(response)
       let text = responseIndex.text,
       time = responseIndex.time,
@@ -102,14 +102,14 @@ let saveMedia = async (response) => {
    })
   }else{
     console.log('IG Post has a single media and it was saved')
-    /* filePath = path.resolve('media', 'posts')
+    filePath = path.resolve('media', 'posts')
     singleMedia= await save(responseUrl, filePath).then(res => {
       console.log('res', res)
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
       fileName = fileName.split()
       return fileName
-    }) */
+    }) 
   }
   return shortcodeOrder.length == 0 ? singleMedia : shortcodeOrder
 }
@@ -136,14 +136,10 @@ let convertGraphSideCar = async responseUrl => {
         
         for(value of urlShortcode){  
           number++
-         // console.log('hehe', path.resolve('media', 'posts', `${number} - ${value.shortcode}`))
-         // filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
-        // filePath = path.join(__dirname, 'media', `${number} - ${value.shortcode}`)
-        console.log('desgraçaaaaaa')
-        /* filePath = `./${number} - ${value.shortcode}`
+          filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
           await utils.download(value.url, filePath).then(res => {
             console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
-          }) */
+          }) 
         } 
        
        shortcodeOrder = orderMedia(urlShortcode)
@@ -192,7 +188,7 @@ let verifyIfPostIsDuplicate = async (media, shortcode) => {
           }else{
             flag = false 
             shortcode.shift()
-            console.log('File didnt exist before')
+            console.log(`File ${file} didnt exist before`)
           }
         }
       }
@@ -221,13 +217,13 @@ let countMediaType = mediaFromFolder => {
   }
 
   if(countPictures != 0 && countVideos != 0){
-    count = `|${countPictures}P${countVideos}V`
+    count = ` | ${countPictures}P${countVideos}V`
   }
 
   if(countPictures == 0 && countVideos > 1){
-    count = `|${countVideos}V`
+    count = ` | ${countVideos}V`
   }else if(countVideos == 0 && countPictures > 1){
-    count = `|${countPictures}P`
+    count = ` | ${countPictures}P`
   }
   console.log('Media Count: Post has', count)
   return count
