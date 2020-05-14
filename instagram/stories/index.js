@@ -1,7 +1,7 @@
 const instory = require('instory')
 let utils = require('../utils')
 let path = require('path');
-const IG_USER = 'albxreche'
+const IG_USER = 'corongabot'
 
 let getInstagramStories = async () => {
 
