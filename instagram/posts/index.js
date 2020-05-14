@@ -6,7 +6,7 @@ let fs = require('fs');
 let path = require('path');
 request = require('request');
 
-let IG_USER = 'britneyspears'
+let IG_USER = 'corongabot'
 
 let getInstagramPosts = async () => {
     
