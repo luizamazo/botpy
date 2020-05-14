@@ -6,7 +6,7 @@ let fs = require('fs');
 let path = require('path');
 request = require('request');
 
-let IG_USER = 'corongabot'
+let IG_USER = 'britneyspears'
 
 let getInstagramPosts = async () => {
     
@@ -138,7 +138,7 @@ let convertGraphSideCar = async responseUrl => {
           number++
           filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
           await utils.download(value.url, filePath).then(res => {
-            console.log('Its a GraphSideCar and it was downloaded (but not saved to a file)')
+            console.log(`${filePath} was downloaded and saved to a file`)
           }) 
         } 
        

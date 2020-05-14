@@ -3,7 +3,6 @@ let utils = require('../utils')
 let path = require('path');
 const IG_USER = 'albxreche'
 
-
 let getInstagramStories = async () => {
 
   let mediaFromFolder = await utils.getMediaFromFolder('stories')
