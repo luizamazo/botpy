@@ -9,7 +9,7 @@ let master = async () => {
     setIntervalAsync(
         async () => {
             await callMaster()
-        }, 10000)
+        }, 20000)
 } 
 
 let callMaster = async () => {
@@ -20,16 +20,15 @@ let callMaster = async () => {
     if(igPost.duplicate == false){
         await childProcessInstagramPosts(igPost)
     } 
-
-    let igStory = await instagramStory.getInstagramStories()
-
-    for(value of igStory){ 
-        if(value[0].duplicate == false){ 
-            await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
-        }
-    }  
-   
 }
+
+let igStory = await instagramStory.getInstagramStories()
+
+for(value of igStory){ 
+    if(value[0].duplicate == false){ 
+        await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
+    }
+}  
 
 let childProcessInstagramPosts = async igPost => {
     return new Promise(function(resolve, reject) {
