@@ -70,6 +70,7 @@ let childProcessInstagramStories = async (igStory, igPost) => {
         let tweet = '',
         flag = false
         tweet = `[STORIES] ${igPost.username}: 
+        
 ${igStory.storyUrl} #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet, igStory.shortcode])
