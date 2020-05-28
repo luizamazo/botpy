@@ -11,7 +11,9 @@ mongoose.connect(db, {
     useUnifiedTopology: true
 })
 
+mongoose.set('useCreateIndex', true)
+
 app.use(express.json())
 app.use(routes)
 
-app.listen(3000)
+app.listen(5000)

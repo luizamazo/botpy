@@ -1,30 +1,90 @@
-const BotSoo = require('../models/BotSoo')
-const BotSe = require('../models/BotSe')
-const NiniBot = require('../models/NiniBot')
-const LiliBot = require('../models/LiliBot')
+const Bot = require('../models/Bot')
 
 module.exports = {
     async store(req, res){
-        let bot = await verifyBotType(req.body)
+        let botName = req.body.botName,
+            posts = req.body.posts,
+            stories = req.body.stories,
+            bot = {}
+
+        bot = await Bot.create({botName, posts, stories})
         return res.json(bot)
+    },
+    async show(req, res){
+        let botName = req.params.botName,
+            botCollection = {}
+        
+        botCollection = await getBotCollection(botName)
+        console.log('res do show', botCollection)
+        return res.json(botCollection)
+    },
+    async updatePosts(req, res){
+        let botName = req.params.botName,
+            posts = req.body.posts
+            
+        let doc = await Bot.findOneAndUpdate(
+            {botName: botName}, 
+            {$set: {posts: posts}}, 
+            {new: true, useFindAndModify: false})
+      
+        return res.json(doc) 
+    },
+    async updateStories(req, res){
+        let botName = req.params.botName,
+            storiesReq = req.body.stories
+            console.log('entrou no update stories, botname e stories req', botName, storiesReq)
+        let botCollection = await getBotCollection(botName)
+        console.log('getbotcolecion', botCollection)
+       // stories[0] != 'Empty' ? (console.log('eh empty'), stories.push(storiesReq)) : stories = storiesReq
+        let doc = await Bot.findOneAndUpdate(
+            {botName: botName}, 
+            {$push: {stories: storiesReq}},
+            {new: true, useFindAndModify: false})
+            console.log('doc dps do update', doc)
+        return res.json(doc)
+    },
+    async deleteStory(req, res){
+        let botName = req.params.botName,
+            story = req.body.story
+            console.log('entrou no delete stories, botname e stories req', botName, story)
+        let botCollection = await getBotCollection(botName)
+        console.log('getbotcolecion', botCollection)
+        stories = botCollection.stories
+        let filteredStories = stories.filter(value => {
+            if(story != value){
+                return value
+            }
+        }) 
+        console.log('filteredStories', filteredStories)
+        let doc = await Bot.findOneAndUpdate(
+            {botName: botName}, 
+            {$set: {stories: filteredStories}}, 
+            {new: true, useFindAndModify: false})
+            console.log('doc dps do update', doc)
+        return res.json(doc) 
     }
 }
 
-let verifyBotType = async (body) => {
-    let botType = body.botType,
-    posts = body.posts,
-    stories = body.stories,
-    bot = {}
-    
-    if(botType == 'botsoo'){
-        bot = await BotSoo.create({posts, stories})
-    }else if(botType == 'botse'){
-        bot = await BotSoo.create({posts, stories})
-    }else if(botType == 'ninibot'){
-        bot = await BotSoo.create({posts, stories})
-    }else if(botType == 'lilibot'){
-        bot = await BotSoo.create({posts, stories})
+let convertBotCollection = async (botName, result) => {
+    return {
+        botName: botName,
+        posts: result.posts,
+        stories: result.stories 
     }
-
-    return bot
 }
+
+let getBotCollection = async (botName) => {
+    let botCollection = {}
+    botCollection = await Bot.find({botName: botName})
+        .then(response => {
+           // console.log('respose do get col ', response)
+            response = response[0]
+          //  console.log('respose do get col response[0', response)
+            return response
+        }).catch(err => {
+            console.error(err)
+        })
+    return botCollection
+}
+
+

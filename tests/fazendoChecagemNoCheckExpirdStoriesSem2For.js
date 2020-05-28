@@ -3,7 +3,7 @@ let utils = require('../utils')
 let path = require('path')
 let axios = require('axios')
 require('dotenv').config({path: '../../.env'})
-const IG_USER = 'albxreche'
+const IG_USER = 'renebaebae'
 const PRODUCTION  = 'https://examplePage.com'
 const DEVELOPMENT = 'http://localhost:5000'
 const URI = (process.env.NODE_ENV ? PRODUCTION : DEVELOPMENT)
@@ -16,13 +16,19 @@ let getInstagramStories = async () => {
   storyUrl = '',
   instagramStory = [],
   onlyNewStories = [],
-  databaseStories = {}
-  let stories = await callInstory()
+  databaseStories = {},
+  mediaFolderWasEmpty = true
+  stories = await callInstory()
 
   if(stories.length > 0){
 
-    databaseStories = await callStoriesFromDatabase()
-    databaseStories = databaseStories.stories
+    if(mediaFromFolder.length == 0){
+      mediaFolderWasEmpty = true
+      databaseStories = await callStoriesFromDatabase()
+      databaseStories = databaseStories.stories
+    }else{
+      mediaFolderWasEmpty = false
+    }
 
     for(value of stories){
       value = value[0]
@@ -53,7 +59,7 @@ let getInstagramStories = async () => {
       if(onlyNewStories.length == 0){
         onlyNewStories = [{'duplicate': true}]
       }
-      checkExpiredStories(mediaFromFolder, databaseStories)
+      checkExpiredStories(mediaFolderWasEmpty, mediaFromFolder, databaseStories)
     }
   return onlyNewStories.length > 0 ? onlyNewStories : 'No new stories' 
 }
@@ -85,13 +91,13 @@ let saveStory = async (url, number, shortcode, expiring_at) => {
   })
 }
 
-let verifyIfStoryIsDuplicate = async (mediaFromFolder, shortcode, databaseStories) => {
+let verifyIfStoryIsDuplicate = async (media, shortcode, databaseStories) => {
   let flag = false
-  if(mediaFromFolder.length == 0){
+  if(media.length == 0){
     console.log('verifyIfStoryIsDuplicate mas pasta eh vazia entao...')
     flag = await verifyIfStoryIsDuplicateDataBase(shortcode, databaseStories)
   }else{
-    for(file of mediaFromFolder){
+    for(file of media){
       if(file.includes(shortcode)){
         flag = true 
         break  
@@ -116,7 +122,7 @@ let verifyIfStoryIsDuplicateDataBase = async (storyShortcode, databaseStories) =
         break  
       }else{
         flag = false
-        console.log(`${file} doesnt include ${storyShortcode}`)
+        console.log(`File ${file} didnt exist before`)
       }
     } 
   }
@@ -144,9 +150,10 @@ let updateStoriesOnDatabase = async (shortcode, expiring_at) => {
 }
 
 
-let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
+let checkExpiredStories = async (mediaFolderWasEmpty, mediaFromFolder, databaseStories) => {
   console.log('checkExpiredStories', databaseStories)
-  
+  if(mediaFolderWasEmpty){
+    if(Array.isArray(databaseStories)){
       for(file of databaseStories){
         console.log('file of database & dbstories', file, databaseStories)
 
@@ -160,9 +167,9 @@ let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
         if(currentDate >= expirationDate){
           await deleteFileFromDatabase(file)
         }
-     
-  }
-  if(mediaFromFolder.length > 0){
+      }
+    }
+  }else{
     for(file of mediaFromFolder){
       let regex =  new RegExp(/\[(.*?)]/g),
       result = file.match(regex).toString().replace('[', '').replace(']', '')

@@ -6,29 +6,31 @@ const { spawn } = require('child_process')
 const BOT_NAME = 'botpy'
 
 let master = async () => {
-    
     setIntervalAsync(
         async () => {
             await callMaster()
-        }, 10000)
+        }, 20000)
 } 
 
 let callMaster = async () => {
-    
+ /*      
     let igPost = await instagramPost.getInstagramPosts()
     igPost = igPost[0]   
     
-    if(igPost.duplicate == false){
+  if(igPost.duplicate == false){
         await childProcessInstagramPosts(igPost)
-    } 
+    }  */
 
     let igStory = await instagramStory.getInstagramStories()
-
+   /*  console.log('no bot', igStory)
     for(value of igStory){ 
-        if(value[0].duplicate == false){ 
-            await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
-        }
-    }  
+        if(value[0]){
+            if(value[0].duplicate == false){ 
+                console.log('chama child process storuies')
+             //   await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
+            }     
+        } 
+    }  */
    
 }
 
@@ -72,7 +74,7 @@ let childProcessInstagramStories = async (igStory, igPost) => {
         let tweet = '',
         flag = false
         tweet = `[STORIES] ${igPost.username}: 
-
+        
 ${igStory.storyUrl} #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet, igStory.shortcode])

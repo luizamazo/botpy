@@ -21,22 +21,35 @@ if "POST" in tweet:
     folder = "posts"
 elif "STORIES" in tweet:
     folder = "stories"
-        
+    
+def natural_key(string_):
+    """See http://www.codinghorror.com/blog/archives/001018.html"""
+    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
+
 def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
-    print('PY: getMediaFromFolder ->', mediaFolder)
-    media_list = []  
+    filelist = os.listdir(mediaFolder)
+    filelist = sorted(filelist, key=natural_key)
+    media_list = [] 
     
     for dirpath, dirnames, files in os.walk(mediaFolder):
-        for f in files:
+        for f in filelist:
             media_list.append(os.path.join(dirpath, f))
+    """  for dirpath, dirnames, files in os.walk(mediaFolder):
+        for f in files:
+            if folder == "posts":
+                fileName = os.path.join(dirpath, f)
+                media_list.append(fileName)
+            else:
+               # fileName = os.path.join(dirpath, f).replace('media/stories\\', '')
+                media_list.append(fileName)"""
+    print('PY: mediaFromFolder ->', media_list)
     return media_list
 
 def getFileFromMediaFolder(folder, fileName):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
-    
     for dirpath, dirnames, files in os.walk(mediaFolder):
         for f in files:
             print('PY: getFileFromMediaFolder ->', f)
@@ -45,17 +58,16 @@ def getFileFromMediaFolder(folder, fileName):
     return mediaPath
 
 def master():
-
-    print('folder', folder)
     
     if folder == "posts":
         media = getMediaFromFolder(folder)
+        print('PY: Media from folder after sorted', media)
         tweetPosts(media)
     else:
         filePath = getFileFromMediaFolder(folder, storyName)
         mediaUploaded = api.upload_chunked(filePath)
         media_ids = [mediaUploaded.media_id_string]      
-        print('PY: Story to be tweeted', filePath)
+        print('PY: Story to be tweeted', filePath) 
         sendTweet(media_ids)
         print('PY: Tweeted story, proceeds or ends')
 
@@ -65,6 +77,7 @@ def tweetPosts(media):
     tweet_id = ''
     for index, path in enumerate(media, start = 1):
             mediaPath = path
+            print('PY: Method Tweet Posts -> MediaPath ->', mediaPath)
             mediaUploaded = api.upload_chunked(mediaPath)
        
             if hasattr(mediaUploaded, 'video'):  
