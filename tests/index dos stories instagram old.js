@@ -3,7 +3,7 @@ let utils = require('../utils')
 let path = require('path')
 let axios = require('axios')
 require('dotenv').config({path: '../../.env'})
-const IG_USER = 'najwanimri'
+const IG_USER = 'albxreche'
 const PRODUCTION  = 'https://examplePage.com'
 const DEVELOPMENT = 'http://localhost:5000'
 const URI = (process.env.NODE_ENV ? PRODUCTION : DEVELOPMENT)
@@ -25,12 +25,15 @@ let getInstagramStories = async (stories) => {
     databaseStories = databaseStories.stories
 
     for(value of stories){
+      value = value[0]
+      //console.log('res', new Date(value.expiring_at * 1000))
       isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode, databaseStories)
       console.log('Is story duplicate?', isStoryDuplicate)
       number++
       if(isStoryDuplicate == false){
-        await saveStory(value.url, number, value.shortcode, value.exp)
-        await updateStoriesOnDatabase(value.shortcode, value.exp)
+        await saveStory(value.url, number, value.shortcode, value.expiring_at)
+        await updateStoriesOnDatabase(value.shortcode, value.expiring_at)
+
         instagramStory.push([{
           'duplicate': false,
           'storyUrl': value.url,
@@ -40,11 +43,13 @@ let getInstagramStories = async (stories) => {
         instagramStory.push([{
           'duplicate': true
         }])
-      } 
+      }
     }
+
       onlyNewStories = instagramStory.filter(story => {
         return story.duplicate != true
       }) 
+    
       if(onlyNewStories.length == 0){
         onlyNewStories = [{'duplicate': true}]
       }
@@ -52,7 +57,6 @@ let getInstagramStories = async (stories) => {
     }
   return onlyNewStories.length > 0 ? onlyNewStories : 'No new stories' 
 }
-  
 
 let callInstory = async () => {
   let count = 0,
@@ -141,9 +145,13 @@ let updateStoriesOnDatabase = async (shortcode, expiring_at) => {
 
 
 let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
+  console.log('checkExpiredStories', databaseStories)
+  
       for(file of databaseStories){
         console.log('file of database & dbstories', file, databaseStories)
+
         let regex =  new RegExp(/\[(.*?)]/g)
+      
         let result = file.match(regex).toString().replace('[', '').replace(']', ''),
         expirationDate = new Date(result * 1000),
         currentDate = new Date()
@@ -151,9 +159,6 @@ let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
         console.log(`FROM DB: Story expiration date -> ${expirationDate} | Current Date -> ${currentDate}`)
         if(currentDate >= expirationDate){
           await deleteFileFromDatabase(file)
-          databaseStories = databaseStories.filter(value => {
-            return value != file
-          })
         }
      
   }
@@ -180,6 +185,7 @@ let deleteFileFromDatabase = async (file) =>{
           console.error(error)
         })  
 }
+
 
 module.exports = {
   getInstagramStories

@@ -3,16 +3,66 @@ instagramStory = require('./instagram/stories/index.js')
 require('dotenv').config()
 const { setIntervalAsync } = require('set-interval-async/dynamic')
 const { spawn } = require('child_process')
-const BOT_NAME = 'botpy'
+const BOT_NAME = process.env.BOT_NAME
+const BOT_USER = process.env.BOT_USER
 
 let master = async () => {
+   let profileId = await childProcessLogin()
+   setIntervalAsync(
+    async () => {
+        await callMaster(profileId)
+    }, 20000)
+}
+
+let childProcessLogin = async () => {
+    return new Promise(function(resolve, reject) {
+        let result = ''
+        const child = spawn('python', ['instaloader/login.py', BOT_USER])
+
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`)
+            result = data
+        })
+
+        child.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`)
+        })
+
+        child.on('close', (code) => {
+            console.log(`child process exited with code ${code}`)
+            resolve(result)
+        })   
+    })
+}
+
+let childProcessInstaloaderStories = async (profileId) => {
+    return new Promise(function(resolve, reject) {
+        let result = {}
+        const child = spawn('python', ['instaloader/download-stories.py', profileId])
+
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`)
+            result = data
+        })
+
+        child.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`)
+        })
+
+        child.on('close', (code) => {
+            console.log(`child process exited with code ${code}`)
+            resolve(result.toString())
+        })   
+    })
+}
+/* let master = async () => {
     setIntervalAsync(
         async () => {
             await callMaster()
         }, 20000)
-} 
+}  */
 
-let callMaster = async () => {
+let callMaster = async (profileId) => {
  /*      
     let igPost = await instagramPost.getInstagramPosts()
     igPost = igPost[0]   
@@ -20,17 +70,25 @@ let callMaster = async () => {
   if(igPost.duplicate == false){
         await childProcessInstagramPosts(igPost)
     }  */
-
-    let igStory = await instagramStory.getInstagramStories()
-   /*  console.log('no bot', igStory)
-    for(value of igStory){ 
-        if(value[0]){
-            if(value[0].duplicate == false){ 
-                console.log('chama child process storuies')
-             //   await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
-            }     
+    let teste = {},
+    stories = []
+    let obj = await childProcessInstaloaderStories(profileId)
+    if(obj == 0){
+        console.log('No new stories')
+    }else{
+        let json = JSON.parse("[" + obj + "]")
+        stories = json[0].reverse()
+        teste = await instagramStory.getInstagramStories(stories)
+        for(value of teste){ 
+            if(value[0]){
+                if(value[0].duplicate == false){ 
+                    console.log('chama child process storuies')
+                    await childProcessInstagramStories(value[0]).then(res => console.log(res))
+                }     
+            } 
         } 
-    }  */
+    } 
+  //  let igStory = await instagramStory.getInstagramStories()
    
 }
 
@@ -69,11 +127,11 @@ ${igPost.url} #${BOT_NAME}`
     })
 }
 
-let childProcessInstagramStories = async (igStory, igPost) => {
+let childProcessInstagramStories = async (igStory) => {
     return new Promise(function(resolve, reject) {
         let tweet = '',
         flag = false
-        tweet = `[STORIES] ${igPost.username}: 
+        tweet = `[STORIES] ${BOT_USER}: 
         
 ${igStory.storyUrl} #${BOT_NAME}`
 
