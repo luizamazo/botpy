@@ -13,7 +13,7 @@ module.exports = {
     async show(req, res){
         let botName = req.params.botName,
             botCollection = {}
-        
+        console.log('show', botName, botCollection)
         botCollection = await getBotCollection(botName)
         console.log('res do show', botCollection)
         return res.json(botCollection)
@@ -33,14 +33,27 @@ module.exports = {
         let botName = req.params.botName,
             storiesReq = req.body.stories
             console.log('entrou no update stories, botname e stories req', botName, storiesReq)
-        let botCollection = await getBotCollection(botName)
+        let botCollection = await getBotCollection(botName),
+            doc = {}
         console.log('getbotcolecion', botCollection)
        // stories[0] != 'Empty' ? (console.log('eh empty'), stories.push(storiesReq)) : stories = storiesReq
-        let doc = await Bot.findOneAndUpdate(
-            {botName: botName}, 
-            {$push: {stories: storiesReq}},
-            {new: true, useFindAndModify: false})
+        
+       if(botCollection.length == 0){
+            doc = await Bot.findOneAndUpdate(
+                {botName: botName}, 
+                {$set: {stories: storiesReq}}, 
+                {new: true, useFindAndModify: false}).then(res => {
+                    
+                     console.log('doc dps do update quando primeiro eh empty', res)
+                })
+        }else{
+            doc = await Bot.findOneAndUpdate(
+                {botName: botName}, 
+                {$push: {stories: storiesReq}},
+                {new: true, useFindAndModify: false})
             console.log('doc dps do update', doc)
+        }
+       
         return res.json(doc)
     },
     async deleteStory(req, res){
@@ -78,8 +91,9 @@ let getBotCollection = async (botName) => {
     botCollection = await Bot.find({botName: botName})
         .then(response => {
            // console.log('respose do get col ', response)
-            response = response[0]
-          //  console.log('respose do get col response[0', response)
+           console.log('respose do get col', response, response.length)
+            response.length == 0 ? response : response = response[0]
+            console.log('respose depois', response, response.length)
             return response
         }).catch(err => {
             console.error(err)

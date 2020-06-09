@@ -1,0 +1,18 @@
+diff --git a/node_modules/night-stalker/dist/components/NightStalker.js b/node_modules/night-stalker/dist/components/NightStalker.js
+index f1c0097..1f96249 100644
+--- a/node_modules/night-stalker/dist/components/NightStalker.js
++++ b/node_modules/night-stalker/dist/components/NightStalker.js
+@@ -155,11 +155,11 @@ class NightStalker {
+       return results.items.map(item => {
+         if (item.media_type === 2) {
+           // video
+-          return { code: item.code, url: item.video_versions[0].url };
++          return { code: item.code, expiring_at: item.expiring_at, url: item.video_versions[0].url };
+         }
+         if (item.media_type === 1) {
+           // still image
+-          return { code: item.code, url: item.image_versions2.candidates[0].url };
++          return { code: item.code, expiring_at: item.expiring_at, url: item.image_versions2.candidates[0].url };
+         }
+         // not sure what other media types are there
+         return null;

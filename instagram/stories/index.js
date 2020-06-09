@@ -8,7 +8,7 @@ const PRODUCTION  = 'https://examplePage.com'
 const DEVELOPMENT = 'http://localhost:5000'
 const URI = (process.env.NODE_ENV ? PRODUCTION : DEVELOPMENT)
 
-let getInstagramStories = async (stories) => {
+let getInstagramStories = async (balanar) => {
 
   let mediaFromFolder = await utils.getMediaFromFolder('stories')
   let filePath = path.resolve('media', 'stories'),
@@ -17,20 +17,20 @@ let getInstagramStories = async (stories) => {
   instagramStory = [],
   onlyNewStories = [],
   databaseStories = {}
- // let stories = await callInstory()
-
+  let stories = await balanar.getStories()
   if(stories.length > 0){
 
     databaseStories = await callStoriesFromDatabase()
-    databaseStories = databaseStories.stories
-
+    console.log('databasestoiees no inicio', databaseStories)
+    databaseStories.length == 0 ? databaseStories : databaseStories = databaseStories.stories
+ 
     for(value of stories){
-      isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode, databaseStories)
+      isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.code, databaseStories)
       console.log('Is story duplicate?', isStoryDuplicate)
       number++
       if(isStoryDuplicate == false){
-        await saveStory(value.url, number, value.shortcode, value.exp)
-        await updateStoriesOnDatabase(value.shortcode, value.exp)
+        await saveStory(value.url, number, value.code, value.expiring_at)
+        await updateStoriesOnDatabase(value.code, value.expiring_at)
         instagramStory.push([{
           'duplicate': false,
           'storyUrl': value.url,
@@ -130,7 +130,9 @@ let callStoriesFromDatabase = async () => {
 }
 
 let updateStoriesOnDatabase = async (shortcode, expiring_at) => {
+  console.log('no update db', shortcode, expiring_at)
   shortcode = `${shortcode} [${expiring_at}]` 
+  console.log('no update', shortcode)
   return await axios({url: `${URI}/updateStories/${process.env.BOT_NAME}`, method: 'PUT', data: {stories: shortcode}})
         .then(response => {
          console.log('response.data no update stories database', response.data)
