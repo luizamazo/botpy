@@ -186,5 +186,3 @@ let deleteFileFromDatabase = async (file) =>{
 module.exports = {
   getInstagramStories
 }
-
-

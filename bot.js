@@ -11,14 +11,9 @@ const NightStalker = require('night-stalker')
 const { Session } = require('shitgram').Plugins;
 
 let master = async () => {
-  //  const shitgram = new Shitgram({username:'corongabot', password: 'vivemosnumasociedade'})
-  //  const teste = await shitgram.getSessionID()
-  const balanar = await NightStalker.loadBrowser();
-  balanar.setUserName(BOT_USER);
-
-  // Login is required for stories. Don't commit your credentials to version control!
-  // The account also should not have 2FA enabled.
-  await balanar.login("corongabot", "vivemosnumasociedade"); 
+  const balanar = await NightStalker.loadBrowser()
+  balanar.setUserName(BOT_USER)
+  await balanar.login("corongabot", "vivemosnumasociedade") 
 
      setIntervalAsync(
         async () => {
@@ -35,16 +30,16 @@ let callMaster = async (balanar) => {
   if(igPost.duplicate == false){
         await childProcessInstagramPosts(igPost)
     }  */
-   let igStory = await instagramStory.getInstagramStories(balanar)
-   /*  console.log('no bot', igStory)
+    let igStory = await instagramStory.getInstagramStories(balanar)
+    console.log('no bot.js, igstory', igStory)
     for(value of igStory){ 
         if(value[0]){
             if(value[0].duplicate == false){ 
                 console.log('chama child process storuies')
-             //   await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
+                //await childProcessInstagramStories(value[0], igPost).then(res => console.log(res))
             }     
         } 
-    }  */
+    }  
    
 }
 
