@@ -7,10 +7,10 @@ const BOT_NAME = process.env.BOT_NAME
 const BOT_USER = process.env.BOT_USER
 
 let master = async () => {
-   let profileId = await childProcessLogin()
+   await childProcessLogin()
    setIntervalAsync(
     async () => {
-        await callMaster(profileId)
+        await callMaster()
     }, 20000)
 }
 
@@ -38,7 +38,7 @@ let childProcessLogin = async () => {
 let childProcessInstaloaderStories = async (profileId) => {
     return new Promise(function(resolve, reject) {
         let result = {}
-        const child = spawn('python', ['instaloader/download-stories.py', profileId])
+        const child = spawn('python', ['instaloader/download-stories.py'])
 
         child.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`)
@@ -62,17 +62,17 @@ let childProcessInstaloaderStories = async (profileId) => {
         }, 20000)
 }  */
 
-let callMaster = async (profileId) => {
- /*      
+let callMaster = async () => {
     let igPost = await instagramPost.getInstagramPosts()
     igPost = igPost[0]   
     
-  if(igPost.duplicate == false){
-        await childProcessInstagramPosts(igPost)
-    }  */
+    if(igPost.duplicate == false){
+        await childProcessTweepyInstagramPosts(igPost)
+    } 
+
     let teste = {},
     stories = []
-    let obj = await childProcessInstaloaderStories(profileId)
+    let obj = await childProcessInstaloaderStories()
     if(obj == 0){
         console.log('No new stories')
     }else{
@@ -82,8 +82,8 @@ let callMaster = async (profileId) => {
         for(value of teste){ 
             if(value[0]){
                 if(value[0].duplicate == false){ 
-                    console.log('chama child process storuies')
-                    await childProcessInstagramStories(value[0]).then(res => console.log(res))
+                    console.log('call ig stories child process')
+                    await childProcessTweepyInstagramStories(value[0]).then(res => console.log(res))
                 }     
             } 
         } 
