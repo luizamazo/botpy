@@ -22,6 +22,7 @@ let download = async (uri, filePath) => {
 let getMediaFromFolder = async (folder) => {
   return new Promise(function(resolve, reject) {
     let filePath = path.resolve('media', folder)
+    console.log('getMediaFromFolder', filePath)
     fs.readdir(filePath, function(err, files){
       let media = []
       if(err){
