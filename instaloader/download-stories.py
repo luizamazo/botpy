@@ -9,9 +9,10 @@ os.environ['BOTPY_USER'] = 'albxreche'
 
 USER = os.getenv('IG_USER')
 PASSWORD = os.getenv('IG_PASSWORD')
-arg = sys.argv[1:]
-PROFILE_ID = arg[0]
+
 ig = instaloader.Instaloader() 
+ig.load_session_from_file('corongabot', filename = 'CORONGABOT')
+profile = ig.check_profile_id('albxreche')
 """ 
 try:
     ig.login(USER, PASSWORD)
@@ -20,7 +21,7 @@ except:
     raise """
 
 teste = []
-for story in ig.get_stories(userids=[PROFILE_ID]):
+for story in ig.get_stories(userids=[profile.userid]):
     for item in story.get_items():
         timestamp = datetime.timestamp(item.expiring_utc)
         if item.is_video == True:

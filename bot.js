@@ -7,7 +7,7 @@ const BOT_NAME = process.env.BOT_NAME
 const BOT_USER = process.env.BOT_USER
 
 let master = async () => {
-   await childProcessLogin()
+
    setIntervalAsync(
     async () => {
         await callMaster()
@@ -35,7 +35,7 @@ let childProcessLogin = async () => {
     })
 }
 
-let childProcessInstaloaderStories = async (profileId) => {
+let childProcessInstaloaderStories = async () => {
     return new Promise(function(resolve, reject) {
         let result = {}
         const child = spawn('python', ['instaloader/download-stories.py'])
@@ -63,13 +63,13 @@ let childProcessInstaloaderStories = async (profileId) => {
 }  */
 
 let callMaster = async () => {
-    let igPost = await instagramPost.getInstagramPosts()
+  /*   let igPost = await instagramPost.getInstagramPosts()
     igPost = igPost[0]   
     
     if(igPost.duplicate == false){
         await childProcessTweepyInstagramPosts(igPost)
     } 
-
+ */
     let teste = {},
     stories = []
     let obj = await childProcessInstaloaderStories()
