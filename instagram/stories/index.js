@@ -15,22 +15,18 @@ let getInstagramStories = async (stories) => {
   number = 0,
   storyUrl = '',
   instagramStory = [],
-  onlyNewStories = [],
-  databaseStories = {}
+  onlyNewStories = []
  // let stories = await callInstory()
 
   if(stories.length > 0){
 
-    databaseStories = await callStoriesFromDatabase()
-    databaseStories = databaseStories.stories
 
     for(value of stories){
-      isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode, databaseStories)
+      isStoryDuplicate = await verifyIfStoryIsDuplicate(mediaFromFolder, value.shortcode)
       console.log('Is story duplicate?', isStoryDuplicate)
       number++
       if(isStoryDuplicate == false){
         await saveStory(value.url, number, value.shortcode, value.exp)
-        await updateStoriesOnDatabase(value.shortcode, value.exp)
         instagramStory.push([{
           'duplicate': false,
           'storyUrl': value.url,
@@ -48,7 +44,7 @@ let getInstagramStories = async (stories) => {
       if(onlyNewStories.length == 0){
         onlyNewStories = [{'duplicate': true}]
       }
-      checkExpiredStories(mediaFromFolder, databaseStories)
+      checkExpiredStories(mediaFromFolder)
     }
   return onlyNewStories.length > 0 ? onlyNewStories : 'No new stories' 
 }
@@ -81,11 +77,10 @@ let saveStory = async (url, number, shortcode, expiring_at) => {
   })
 }
 
-let verifyIfStoryIsDuplicate = async (mediaFromFolder, shortcode, databaseStories) => {
+let verifyIfStoryIsDuplicate = async (mediaFromFolder, shortcode) => {
   let flag = false
   if(mediaFromFolder.length == 0){
-    console.log('verifyIfStoryIsDuplicate mas pasta eh vazia entao...')
-    flag = await verifyIfStoryIsDuplicateDataBase(shortcode, databaseStories)
+    console.log('verifyIfStoryIsDuplicate mas pasta eh vazia entao...fodase')
   }else{
     for(file of mediaFromFolder){
       if(file.includes(shortcode)){
@@ -99,64 +94,8 @@ let verifyIfStoryIsDuplicate = async (mediaFromFolder, shortcode, databaseStorie
   return flag
 }
 
-let verifyIfStoryIsDuplicateDataBase = async (storyShortcode, databaseStories) => {
-  console.log("Folder was empty, calling database to verify if story is duplicate storyShortcode...", databaseStories)
-  let flag = false
-  if(databaseStories.length == 0){
-    flag = false
-  }else{
-    for(file of databaseStories){
-      if(file.includes(storyShortcode)){
-        flag = true 
-        console.log(`Duplicate story, file ${file}`)
-        break  
-      }else{
-        flag = false
-        console.log(`${file} doesnt include ${storyShortcode}`)
-      }
-    } 
-  }
-  return flag
-}
 
-let callStoriesFromDatabase = async () => {
-  return await axios({url: `${URI}/show/${process.env.BOT_NAME}`, method: 'GET' })
-      .then(response => {
-        console.log('response do callStoriesFromDatabase', response.data)
-        return response.data
-      }).catch(error => {
-        console.error(error)
-      }) 
-}
-
-let updateStoriesOnDatabase = async (shortcode, expiring_at) => {
-  shortcode = `${shortcode} [${expiring_at}]` 
-  return await axios({url: `${URI}/updateStories/${process.env.BOT_NAME}`, method: 'PUT', data: {stories: shortcode}})
-        .then(response => {
-         console.log('response.data no update stories database', response.data)
-        }).catch(error => {
-          console.error(error)
-        })  
-}
-
-
-let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
-      for(file of databaseStories){
-        console.log('file of database & dbstories', file, databaseStories)
-        let regex =  new RegExp(/\[(.*?)]/g)
-        let result = file.match(regex).toString().replace('[', '').replace(']', ''),
-        expirationDate = new Date(result * 1000),
-        currentDate = new Date()
-        console.log(result)
-        console.log(`FROM DB: Story expiration date -> ${expirationDate} | Current Date -> ${currentDate}`)
-        if(currentDate >= expirationDate){
-          await deleteFileFromDatabase(file)
-          databaseStories = databaseStories.filter(value => {
-            return value != file
-          })
-        }
-     
-  }
+let checkExpiredStories = async (mediaFromFolder) => {
   if(mediaFromFolder.length > 0){
     for(file of mediaFromFolder){
       let regex =  new RegExp(/\[(.*?)]/g),
@@ -171,15 +110,6 @@ let checkExpiredStories = async (mediaFromFolder, databaseStories) => {
   }
 }
 
-let deleteFileFromDatabase = async (file) =>{
-  console.log('no deleteFileFromDatabase, file to be deleted is', file)
-  return await axios({url: `${URI}/deleteStory/${process.env.BOT_NAME}`, method: 'PUT', data: {story: file}})
-        .then(response => {
-         console.log(response.data)
-        }).catch(error => {
-          console.error(error)
-        })  
-}
 
 module.exports = {
   getInstagramStories

@@ -7,17 +7,49 @@ const BOT_NAME = process.env.BOT_NAME
 const BOT_USER = process.env.BOT_USER
 
 let master = async () => {
-   await childProcessLogin()
    setIntervalAsync(
     async () => {
         await callMaster()
     }, 20000)
 }
 
-let childProcessLogin = async () => {
+
+let callMaster = async () => {
+     let igPost = await instagramPost.getInstagramPosts()
+     /*    igPost = igPost[0]   
+    
+    if(igPost.duplicate == false){
+        await childProcessInstagramPosts(igPost)
+    }   */
+   // await childProcessComments()
+  /*   let teste = {},
+    stories = []
+    let obj = await childProcessInstaloaderStories()
+    if(obj == 0){
+        console.log('No new stories')
+    }else{
+        let json = JSON.parse("[" + obj + "]")
+        stories = json[0].reverse()
+        teste = await instagramStory.getInstagramStories(stories)
+
+        console.log('TESTE', teste)
+        for(value of teste){ 
+            if(value[0]){
+                if(value[0].duplicate == false){ 
+                    console.log('call ig stories child process')
+                    await childProcessInstagramStories(value[0]).then(res => console.log(res))
+                }     
+            } 
+        } 
+    }  */
+  //  let igStory = await instagramStory.getInstagramStories()
+   
+}
+
+let childProcessComments = async () => {
     return new Promise(function(resolve, reject) {
         let result = ''
-        const child = spawn('python', ['instaloader/login.py', BOT_USER])
+        const child = spawn('python', ['instaloader/comments.py', BOT_USER])
 
         child.stdout.on('data', (data) => {
             console.log(`stdout: ${data}`)
@@ -35,7 +67,7 @@ let childProcessLogin = async () => {
     })
 }
 
-let childProcessInstaloaderStories = async (profileId) => {
+let childProcessInstaloaderStories = async () => {
     return new Promise(function(resolve, reject) {
         let result = {}
         const child = spawn('python', ['instaloader/download-stories.py'])
@@ -55,42 +87,7 @@ let childProcessInstaloaderStories = async (profileId) => {
         })   
     })
 }
-/* let master = async () => {
-    setIntervalAsync(
-        async () => {
-            await callMaster()
-        }, 20000)
-}  */
 
-let callMaster = async () => {
-    let igPost = await instagramPost.getInstagramPosts()
-    igPost = igPost[0]   
-    
-    if(igPost.duplicate == false){
-        await childProcessTweepyInstagramPosts(igPost)
-    } 
-
-    let teste = {},
-    stories = []
-    let obj = await childProcessInstaloaderStories()
-    if(obj == 0){
-        console.log('No new stories')
-    }else{
-        let json = JSON.parse("[" + obj + "]")
-        stories = json[0].reverse()
-        teste = await instagramStory.getInstagramStories(stories)
-        for(value of teste){ 
-            if(value[0]){
-                if(value[0].duplicate == false){ 
-                    console.log('call ig stories child process')
-                    await childProcessTweepyInstagramStories(value[0]).then(res => console.log(res))
-                }     
-            } 
-        } 
-    } 
-  //  let igStory = await instagramStory.getInstagramStories()
-   
-}
 
 let childProcessInstagramPosts = async igPost => {
     return new Promise(function(resolve, reject) {

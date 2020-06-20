@@ -2,6 +2,7 @@ const instagramPosts = require('instagram-posts');
 const save = require('instagram-save');
 const axios = require('axios'); 
 let utils = require('../utils');
+let relevantUsers = require('../relevantUsers');
 let fs = require('fs');
 let path = require('path');
 request = require('request');
@@ -17,7 +18,10 @@ const URI = (process.env.NODE_ENV ? PRODUCTION : DEVELOPMENT);
 let getInstagramPosts = async () => {
 
     let response = await callInstaPosts()
-    let responseIndex = response[0],
+    let responseIndex = response[0], 
+    responseUrl = responseIndex.url
+    await getVerifiedComments(responseUrl)
+   /*  let responseIndex = response[0],
         responseTypename = responseIndex.__typename,
         responseUrl = responseIndex.url,
         shortcode = responseIndex.shortcode,
@@ -69,9 +73,8 @@ let getInstagramPosts = async () => {
         'username': username
       }]
     }
-    return instagramPost 
+    return instagramPost  */
 }
-
 
 let callInstaPosts = async () => {
   let count = 0,
@@ -80,6 +83,7 @@ let callInstaPosts = async () => {
     try {
       console.log('Entered try -> callInstaPosts')
       instaPosts = await instagramPosts(IG_USER, {count: 1})
+     // console.log('instaPosts', instaPosts)
       return instaPosts
     }catch(error) {
       if(++count == maxTries){
@@ -103,7 +107,7 @@ let saveMedia = async (response) => {
    await convertGraphSideCar(responseUrl).then(shortcode => {
     shortcodeOrder = shortcode
    })
-   await updatePostsOnDatabase(shortcodeOrder)
+ 
   }else{
     console.log('IG Post has a single media and it was saved')
     filePath = path.resolve('media', 'posts')
@@ -111,11 +115,49 @@ let saveMedia = async (response) => {
       let fileName = res.url 
       fileName = fileName.replace('https://www.instagram.com/p/', '')
       fileName = fileName.split()
-      await updatePostsOnDatabase(fileName)
       return fileName
     }) 
   }
   return shortcodeOrder.length == 0 ? singleMedia : shortcodeOrder
+}
+
+let getVerifiedComments = async responseUrl => {
+  responseUrl = responseUrl + '?__a=1'
+  return await axios({url: responseUrl, method: 'GET' })
+  .then(async response => {
+    let body = response.data,
+        media = body.graphql.shortcode_media,
+        freq = [],
+        relevantComment = {}
+
+    parent_comment = media.edge_media_to_parent_comment
+
+    for(teste of parent_comment.edges){
+      let node = teste.node
+          owner = node.owner.username,
+          threadedComments = node.edge_threaded_comments
+          isRelevantUser = false
+      relevantUsers.map(user => {
+        if(owner == user){
+          console.log('relevant user inside map & owner', user, owner)
+          isRelevantUser = true
+        }
+      })
+      console.log(isRelevantUser)
+      if(isRelevantUser == true){
+       // freq.push(teste)
+        relevantComment = teste
+        if(threadedComments.count > 0){
+        
+        }
+      }
+    }
+
+    console.log('relevant comment', freq)
+ 
+  }).catch(error => {
+    console.log(error)
+  })
 }
 
 let convertGraphSideCar = async responseUrl => {
@@ -179,7 +221,7 @@ let verifyIfPostIsDuplicate = async (media, postShortcode) => {
   console.log(`Verifying if post is duplicate...
   Current media from the folder ->`, media)
   if(media.length == 0){
-    flag = await verifyIfPostIsDuplicateDataBase(postShortcode)
+    console.log('folder was empty before, posts')
   }else{
     while(postShortcode.length != 0){
       for(file of media){
@@ -199,50 +241,6 @@ let verifyIfPostIsDuplicate = async (media, postShortcode) => {
     }
   }
   return flag
-}
-
-let verifyIfPostIsDuplicateDataBase = async (postShortcode) => {
-  console.log("Folder was empty, calling database to verify if post is duplicate...")
-  let bot = await callPostsFromDataBase()
-  let flag = false
-
-  while(postShortcode.length != 0){
-    for(file of bot.posts){
-      if(postShortcode.length != 0){
-        let firstElement = postShortcode[0]
-        if(file.includes(firstElement)){
-          console.log(`Duplicate media, file ${file}`)
-          flag = true 
-          postShortcode.shift()
-        }else{
-          flag = false 
-          postShortcode.shift()
-          console.log(`File ${file} didnt exist before`)
-        }
-      }
-    }
-  }
-  return flag
-}
-
-let callPostsFromDataBase = async () => {
-  return await axios({url: `${URI}/show/${process.env.BOT_NAME}`, method: 'GET' })
-      .then(response => {
-        return response.data
-      }).catch(error => {
-        console.error(error)
-      }) 
-}
-
-let updatePostsOnDatabase = async (shortcode) => {
-
-  if(typeof shortcode == 'string') shortcode = shortcode.split() 
-  return await axios({url: `${URI}/updatePosts/${process.env.BOT_NAME}`, method: 'PUT', data: {posts: shortcode}})
-        .then(response => {
-         console.log(response.data)
-        }).catch(error => {
-          console.error(error)
-        })  
 }
 
 let orderMedia = urlShortcode => {
