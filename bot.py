@@ -16,34 +16,39 @@ tweet = arg[0]
 if len(sys.argv) > 2: 
     storyName = sys.argv[2]
     print('PY: Entrou no arg de Stories')
+    
+folder = 'null'
+isIGTV = False 
 
 if "POST" in tweet:
     folder = "posts"
+elif "IGTV" in tweet: 
+    isIGTV = True
+    folder = "posts"
 elif "STORIES" in tweet:
     folder = "stories"
-    
-def natural_key(string_):
-    """See http://www.codinghorror.com/blog/archives/001018.html"""
-    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
+elif "profile pic" in tweet:
+    folder = "user"
 
 def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
-    filelist = os.listdir(mediaFolder)
-    filelist = sorted(filelist, key=natural_key)
     media_list = [] 
-    
+    print('VNFENRRO.', mediaFolder)
+ 
     for dirpath, dirnames, files in os.walk(mediaFolder):
-        for f in filelist:
-            media_list.append(os.path.join(dirpath, f))
-    """  for dirpath, dirnames, files in os.walk(mediaFolder):
         for f in files:
-            if folder == "posts":
+            if folder == "posts":                    
                 fileName = os.path.join(dirpath, f)
+                print('fileName', fileName)
                 media_list.append(fileName)
-            else:
-               # fileName = os.path.join(dirpath, f).replace('media/stories\\', '')
-                media_list.append(fileName)"""
+                print('media_list no if', media_list)
+            elif folder == "stories":
+                fileName = os.path.join(dirpath, f).replace('media/stories\\', '')
+                media_list.append(fileName)
+            elif folder == "user":
+                fileName = os.path.join(dirpath, f).replace('media/user\\', '')
+                media_list.append(fileName)
     print('PY: mediaFromFolder ->', media_list)
     return media_list
 
@@ -59,17 +64,34 @@ def getFileFromMediaFolder(folder, fileName):
 
 def master():
     
-    if folder == "posts":
+    if isIGTV == True: 
+        print('PY: Its IGTV')
+        filePath = getFileFromMediaFolder(folder, 'thumbnail')
+        mediaUploaded = api.upload_chunked(filePath)
+        media_ids = [mediaUploaded.media_id_string]      
+        print('PY: IGTV THUMB to be tweeted', filePath) 
+        sendTweet(media_ids)
+    elif folder == "posts":
         media = getMediaFromFolder(folder)
-        print('PY: Media from folder after sorted', media)
+        print('PY: Media from folder', media)
         tweetPosts(media)
-    else:
+    elif folder == "stories":
         filePath = getFileFromMediaFolder(folder, storyName)
         mediaUploaded = api.upload_chunked(filePath)
         media_ids = [mediaUploaded.media_id_string]      
         print('PY: Story to be tweeted', filePath) 
         sendTweet(media_ids)
         print('PY: Tweeted story, proceeds or ends')
+    elif folder == "user":
+        print('PY: Tweet new profile pic')
+        filePath = getFileFromMediaFolder(folder, "profile_pic")
+        mediaUploaded = api.upload_chunked(filePath)
+        media_ids = [mediaUploaded.media_id_string]
+        sendTweet(media_ids)
+    else:
+        print('PY: Tweeting updated user profile data')
+        print('tweet->', tweet)
+        sendTextTweet()
 
 def tweetPosts(media):
     mediaIdImages = []
@@ -150,6 +172,22 @@ def sendTweet(media_ids):
                     deleteMediaFromFolder()
                 elif folder == "stories":
                     deleteFileFromFolder()
+                raise
+            
+def sendTextTweet():
+    count = 0
+    maxTries = 5
+    while True: 
+        try:
+            print('PY: Entered sendTextTweet try ->')
+            sent_tweet = api.update_status(
+                status = tweet
+            )
+            return sent_tweet
+        except tweepy.TweepError as error:
+            count += 1
+            print('Error sending tweet ->', error)
+            if count == maxTries:
                 raise
 
 def sendReply(previous_tweet_id, media_ids):

@@ -1,0 +1,10 @@
+{
+    "id": "user.id",
+    "username":" user.username",
+    "full_name": "user.full_name",
+    "bio":" user.biography",
+    "external_url": "user.external_url",
+    "following": "user.edge_follow.count",
+    "profile_pic": "user.profile_pic_url_hd",
+    "followersMark": "2.000"
+}

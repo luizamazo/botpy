@@ -3,26 +3,13 @@ import os, sys
 import json
 from datetime import datetime 
 
-os.environ['IG_USER'] = 'corongabot'
-os.environ['IG_PASSWORD'] = 'vivemosnumasociedade'
-os.environ['BOTPY_USER'] = 'albxreche'
-
-USER = os.getenv('IG_USER')
-PASSWORD = os.getenv('IG_PASSWORD')
-
-ig = instaloader.Instaloader() 
-USER = os.getenv('IG_USER')
-PASSWORD = os.getenv('IG_PASSWORD')
+arg = sys.argv[1:]
+BOT_USER = arg[0]
 
 ig = instaloader.Instaloader() 
 ig.load_session_from_file('corongabot', filename = 'CORONGABOT')
-profile = ig.check_profile_id('albxreche')
-""" 
-try:
-    ig.login(USER, PASSWORD)
-except:
-    print('PY: Error logging in instagram')
-    raise """
+profile = ig.check_profile_id(BOT_USER)
+
 
 teste = []
 for story in ig.get_stories(userids=[profile.userid]):
