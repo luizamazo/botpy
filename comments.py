@@ -102,7 +102,6 @@ def tweetRelevantComments():
             else:
                 commentsPosted = []
                 commentsPosted.append(comment)
-                print('folder was empty, wriing commnt to file', commentsPosted)
                 write_json(commentsPosted_path, commentsPosted)
                 isFileEmpty = verifyIfFileIsEmpty(commentsPosted_path)
                
