@@ -1,0 +1,2 @@
+primeiro eu rodei o login.py
+python login.py -u "noctedaemones" -p "letskillthislove" -settings "credentials.json"

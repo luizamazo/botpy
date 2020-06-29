@@ -10,18 +10,19 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 20000)
+    }, 27000)
 }
 
 let callMaster = async () => {
-    let igPost = await instagramPost.getInstagramPosts() 
+   let igPost = await instagramPost.getInstagramPosts() 
         igPost = igPost[0]   
     
     if(igPost.duplicate == false){
-        await cpLibs.tweetInstagramPosts(igPost)
+        //await cpLibs.tweetInstagramPosts(igPost)
     }else{
-        await postChangedUserDetails(igPost)
-    }
+        //await postChangedUserDetails(igPost)
+        await cpLibs.tweetRelevantComments(igPost.url, igPost.media_id)
+    } 
 
   //  await handleStories()
 }

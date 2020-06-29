@@ -26,9 +26,7 @@ ${igPost.url} @ygofficialblink #${BOT_NAME}`
      
 ${igPost.url} @ygofficialblink #${BOT_NAME}`
         }
-        
-        
-
+    
         const child = spawn('python', ['bot.py', tweet])
 
         child.stdout.on('data', (data) => {
@@ -73,6 +71,29 @@ ${igStory.storyUrl} @ygofficialblink #${BOT_NAME}`
     })
 }
 
+let tweetRelevantComments = async (post_url, media_id) => {
+    return new Promise(function(resolve, reject) {  
+        
+        payload = [BOT_USER, post_url, BOT_NAME, media_id]
+
+        const child = spawn('python', ['comments.py', payload])
+
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`)
+        })
+
+        child.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`)
+        })
+
+        child.on('close', (code) => {
+            console.log(`child process exited with code ${code}`)
+            flag = true
+            resolve(flag)
+        })   
+    })
+}
+
 let getInstaloaderStories = async () => {
     return new Promise(function(resolve, reject) {
         let result = {}
@@ -99,5 +120,6 @@ let getInstaloaderStories = async () => {
 module.exports = {
     tweetInstagramPosts,
     tweetInstagramStories,
+    tweetRelevantComments,
     getInstaloaderStories
 }

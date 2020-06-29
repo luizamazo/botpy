@@ -22,7 +22,23 @@ let download = async (uri, filePath) => {
 let getMediaFromFolder = async (folder) => {
   return new Promise(function(resolve, reject) {
     let filePath = path.resolve('media', folder)
-    console.log('getMediaFromFolder', filePath)
+    fs.readdir(filePath, function(err, files){
+      let media = []
+      if(err){
+          console.log(err)
+          reject(err)
+      }else{
+          files.forEach(function(file){
+              media.push(file)
+          })
+          resolve(media)
+      }
+    })
+  }) 
+}
+
+let getFilesFromFolder = async (filePath) => {
+  return new Promise(function(resolve, reject) {
     fs.readdir(filePath, function(err, files){
       let media = []
       if(err){
@@ -53,6 +69,22 @@ let deleteMediaFromFolder = async (media, folder) => {
   }
 }
 
+let deleteComments = async (files, folder) => {
+  for(file of files){
+    file_path = path.resolve('instagram', folder, file)
+    if(!file.includes('relevantUsers')){
+      fs.unlink(file_path, function(err){
+        if (err){
+          console.log('ERROR: unable to delete media ' + file_path);
+        }
+        else{
+          console.log(file_path + ' was deleted');
+        }
+      })
+    }
+  }
+}
+
 let deleteFileFromFolder = async (file, folder) => {
   let mediaFromFolder = await getMediaFromFolder(folder)
   for(media of mediaFromFolder){
@@ -74,6 +106,8 @@ let deleteFileFromFolder = async (file, folder) => {
   module.exports = {
       download,
       getMediaFromFolder,
+      getFilesFromFolder,
       deleteMediaFromFolder,
-      deleteFileFromFolder
+      deleteFileFromFolder,
+      deleteComments
   }

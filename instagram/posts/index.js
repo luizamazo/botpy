@@ -6,6 +6,7 @@ const axios = require('axios')
 const utils = require('../utils')
 const jsonfile = require('jsonfile')
 let path = require('path')
+const fs = require('fs')
 
 const BOT_USER = process.env.BOT_USER
 
@@ -17,6 +18,7 @@ let getInstagramPosts = async () => {
         responseUrl = responseIndex.url,
         shortcode = responseIndex.shortcode,
         username = responseIndex.username,
+        media_id = responseIndex.id,
         isPostDuplicate = false,
         instagramPost = {},
         mediaFromFolder = '',
@@ -45,8 +47,10 @@ let getInstagramPosts = async () => {
         await utils.download(responseIndex.thumbnail_src, filePath).then(res => {
         console.log(`IGTV THUMB ${filePath} was downloaded and saved to a file`)
         })
-
       } 
+
+      await handleComments(media_id)
+
       let text = responseIndex.text,
       time = responseIndex.time,
       typename = responseIndex.__typename,
@@ -73,6 +77,8 @@ let getInstagramPosts = async () => {
 
       instagramPost = [{
         'duplicate': true,
+        'media_id': media_id,
+        'url': responseUrl,
         'full_name': verifiedUserDetails.full_name, 
         'bio': verifiedUserDetails.bio,
         'external_url': verifiedUserDetails.external_url,
@@ -82,6 +88,18 @@ let getInstagramPosts = async () => {
       }]
     }
     return instagramPost  
+}
+
+let handleComments = async (media_id) => {
+  console.log('no handle comment')
+  folder_path = path.resolve('instagram', 'comments')
+  filesFromFolder = await utils.getFilesFromFolder(folder_path)
+  utils.deleteComments(filesFromFolder, 'comments')
+  commentsPosted = path.resolve('instagram', 'comments',`commentsPosted [${media_id}].json`)
+  //commentsToPost =  path.resolve('instagram', 'comments',`commentsToPost [${media_id}].json`)
+  console.log('commentsPosted path', commentsPosted)
+  fs.closeSync(fs.openSync(commentsPosted, 'w'))
+  //fs.closeSync(fs.openSync(commentsToPost, 'w'))
 }
 
 let verifyUserDetailChanges = async () => {
@@ -133,23 +151,14 @@ let verifyUserDetailChanges = async () => {
           followingNumberChanged = true
         }
         
-        console.log('flag', followersMarkChanged)
         let newFollowersMark = await verifyFollowersMarks(userDetails)
         if(json.followers != userDetails.followers){
-          console.log(`
-          json.followersMark, ${json.followersMark}
-          newFollowersMark, ${newFollowersMark} 
-          json.followersMark != newFollowersMark ${json.followersMark != newFollowersMark}
-          `)
           if(json.followersMark !== newFollowersMark){
             console.log('entrou no if hmmm')
             followersMarkChanged = true
           }
         }
-        console.log('userDetails sem o followmark', userDetails)
         userDetails.followersMark = newFollowersMark
-        console.log('userDetails com o followmark', userDetails)
-        console.log('flag 2', followersMarkChanged)
         if(json.profile_pic != userDetails.profile_pic){
           filePath = path.resolve('media', 'user', `profile_pic`)
           await utils.download(userDetails.profile_pic, filePath).then(res => {
@@ -196,7 +205,7 @@ let callInstaPosts = async () => {
     try {
       console.log('Entered try -> callInstaPosts')
       instaPosts = await instagramPosts(BOT_USER, {count: 1})
-      console.log('instaPosts', instaPosts)
+      //console.log('instaPosts', instaPosts)
       return instaPosts
     }catch(error) {
       if(++count == maxTries){
