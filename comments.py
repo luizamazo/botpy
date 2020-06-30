@@ -3,9 +3,9 @@ import utils
 import sys, os
 import time
 from random import randrange
+import random
 from instagram_private_api import Client, ClientCompatPatch
 
-user_name = "noctedaemones"
 password = "letskillthislove"
 #MEDIA_ID = '2331692048117583287'
 arg = sys.argv[1:]
@@ -17,13 +17,17 @@ BOT_NAME = payload[2]
 MEDIA_ID = payload[3]
 print(BOT_USER, POST_URL, BOT_NAME)
 
-interval = randrange(1,10)
-print('interval', interval)
-time.sleep(interval)
+#array = ["noctedaemones", "vettrahunter"]
+#user_name = random.choice(array)
+#print(user_name)
+#interval = randrange(1,9)
+#print('interval', interval)
+#time.sleep(interval)
+user_name = "noctedaemones"
 api = Client(user_name, password, auto_patch=True)
 
 def commentsMaster():
-    comments = api.media_n_comments(MEDIA_ID, n=10)
+    comments = api.media_n_comments(MEDIA_ID, n=50)
     file_path = './instagram/comments/comments [' + MEDIA_ID + '].json'
     write_json(file_path, comments)
     searchAndWriteRelevantComments(MEDIA_ID)

@@ -3,14 +3,15 @@ const instagramPost = require('./instagram/posts/index.js')
 const instagramStory = require('./instagram/stories/index.js')
 const cpUser = require('./childProcessesUser.js')
 const cpLibs = require('./childProcessesLibs.js')
-
+const LocalStorage = require('node-localstorage').LocalStorage
+const localStorage = new LocalStorage('./storage')
 const { setIntervalAsync } = require('set-interval-async/dynamic')
 
 let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 27000)
+    }, 30000)
 }
 
 let callMaster = async () => {
@@ -21,7 +22,22 @@ let callMaster = async () => {
         //await cpLibs.tweetInstagramPosts(igPost)
     }else{
         //await postChangedUserDetails(igPost)
-        await cpLibs.tweetRelevantComments(igPost.url, igPost.media_id)
+        searchForComments = localStorage.getItem('searchForComments')
+        console.log('get search for comments inicial', searchForComments)
+        if(searchForComments == null){
+            localStorage.setItem('searchForComments', true)
+        }
+        if(searchForComments == 'true'){ 
+            console.log('chama a lib pra fazer search de coments')
+            await cpLibs.tweetRelevantComments(igPost.url, igPost.media_id)
+        }else{
+            console.log('nao deve chamar a lib de search comments, pulou a vez')
+        }
+        if(searchForComments == 'true'){
+            localStorage.setItem('searchForComments', false)
+        }else{
+            localStorage.setItem('searchForComments', true)
+        }
     } 
 
   //  await handleStories()

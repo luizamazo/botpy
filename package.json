@@ -4,7 +4,7 @@
   "description": "botpy",
   "main": "bot.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
     "postinstall": "patch-package"
@@ -22,6 +22,7 @@
     "instory": "^1.0.2",
     "jsonfile": "^6.0.1",
     "mongoose": "^5.9.13",
+    "node-localStorage": "0.0.1",
     "patch-package": "^6.2.2",
     "set-interval-async": "1.0.32"
   },
