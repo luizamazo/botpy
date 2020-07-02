@@ -20,13 +20,15 @@
     "instagram-posts": "^2.2.0",
     "instagram-private-api": "^1.40.1",
     "instagram-save": "^1.3.2",
+    "instagram-web-api": "^2.2.0",
     "instory": "^1.0.2",
     "jsonfile": "^6.0.1",
     "mongoose": "^5.9.13",
     "node-localStorage": "0.0.1",
     "node-localstorage": "^2.1.6",
     "patch-package": "^6.2.2",
-    "set-interval-async": "1.0.32"
+    "set-interval-async": "1.0.32",
+    "tough-cookie-filestore2": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.3"

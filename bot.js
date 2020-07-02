@@ -11,7 +11,7 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 35000)
+    }, 60000)
 }
 
 let callMaster = async () => {
