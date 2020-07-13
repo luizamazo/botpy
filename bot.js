@@ -11,7 +11,7 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 35000)
+    }, 30000)
 }
 
 let callMaster = async () => {
@@ -22,21 +22,47 @@ let callMaster = async () => {
         //await cpLibs.tweetInstagramPosts(igPost)
     }else{
         //await postChangedUserDetails(igPost)
+        count = localStorage.getItem('count')
         searchForComments = localStorage.getItem('searchForComments')
-        console.log('get search for comments inicial', searchForComments)
+        console.log(`
+            NO INICIO
+            count ${count}
+            searchForComments ${searchForComments}
+        `)
+        
         if(searchForComments == null){
             localStorage.setItem('searchForComments', true)
+            searchForComments = localStorage.getItem('searchForComments')
         }
-        if(searchForComments == 'true'){ 
-            console.log('chama a lib pra fazer search de coments')
-            await cpLibs.tweetRelevantComments(igPost.url, igPost.media_id)
-        }else{
-            console.log('nao deve chamar a lib de search comments, pulou a vez')
+        if(count == null){
+            localStorage.setItem('count', 1)
+            count = localStorage.getItem('count')
         }
-        if(searchForComments == 'true'){
-            localStorage.setItem('searchForComments', false)
-        }else{
-            localStorage.setItem('searchForComments', true)
+        count = parseInt(count)
+
+        console.log(`
+            NO MEIO
+            count ${count}
+            searchForComments ${searchForComments}
+        `)
+
+        if(count == 1){
+            count++
+            localStorage.setItem('count', count)
+            console.log('count == 1, novo valor de count', count)
+        }else if(count == 2){
+            if(searchForComments == 'true'){ 
+                console.log('chama a lib pra fazer search de coments')
+                await cpLibs.tweetRelevantComments(igPost.url, igPost.media_id)
+            }else{
+                console.log('nao deve chamar a lib de search comments, pulou a vez')
+            }
+            if(searchForComments == 'true'){
+                localStorage.setItem('searchForComments', false)
+            }else{
+                localStorage.setItem('searchForComments', true)
+            }
+            localStorage.setItem('count', 1)
         }
     } 
 
@@ -58,7 +84,8 @@ let postChangedUserDetails = async igPost => {
             await cpUser.externalUrlChanged(igPost.external_url.newExternalUrl)
         }
     } */
-    console.log('doded', igPost)
+   //
+     console.log('igPost', igPost)
     if(igPost.followersMark.followersMarkChanged){
         await cpUser.followersMark(igPost.followersMark.newFollowersMark)
     }

@@ -23,7 +23,6 @@
     "instory": "^1.0.2",
     "jsonfile": "^6.0.1",
     "mongoose": "^5.9.13",
-    "node-localStorage": "0.0.1",
     "node-localstorage": "^2.1.6",
     "patch-package": "^6.2.2",
     "set-interval-async": "1.0.32"

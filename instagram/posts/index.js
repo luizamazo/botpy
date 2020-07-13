@@ -7,6 +7,8 @@ const utils = require('../utils')
 const jsonfile = require('jsonfile')
 let path = require('path')
 const fs = require('fs')
+const LocalStorage = require('node-localstorage').LocalStorage
+const localStorage = new LocalStorage('./storage')
 
 const BOT_USER = process.env.BOT_USER
 
@@ -73,19 +75,72 @@ let getInstagramPosts = async () => {
       }]
 
     }else{
-      let verifiedUserDetails = await verifyUserDetailChanges()
+      countNewUserDetails = localStorage.getItem('countNewUserDetails')
+      searchForNewUserDetails = localStorage.getItem('searchForNewUserDetails')
+      console.log(`
+          NO INICIO
+          count ${countNewUserDetails}
+          searchForNewUserDetails ${searchForNewUserDetails}
+      `)
+      
+      if(searchForNewUserDetails == null){
+          localStorage.setItem('searchForNewUserDetails', true)
+          searchForNewUserDetails = localStorage.getItem('searchForNewUserDetails')
+      }
+      if(countNewUserDetails == null){
+          localStorage.setItem('countNewUserDetails', 1)
+          countNewUserDetails = localStorage.getItem('countNewUserDetails')
+      }
+      countNewUserDetails = parseInt(countNewUserDetails)
 
-      instagramPost = [{
-        'duplicate': true,
-        'media_id': media_id,
-        'url': responseUrl,
-        'full_name': verifiedUserDetails.full_name, 
-        'bio': verifiedUserDetails.bio,
-        'external_url': verifiedUserDetails.external_url,
-        'following': verifiedUserDetails.following,
-        'profile_pic': verifiedUserDetails.profile_pic,
-        'followersMark': verifiedUserDetails.followersMark
-      }]
+      console.log(`
+          NO MEIO
+          countNewUserDetails ${countNewUserDetails}
+          searchForNewUserDetails ${searchForNewUserDetails}
+      `)
+
+      if(countNewUserDetails == 1){
+          countNewUserDetails++
+          localStorage.setItem('countNewUserDetails', countNewUserDetails)
+          console.log('countNewUserDetails == 1, novo valor de countNewUserDetails', countNewUserDetails)
+      }else if(countNewUserDetails == 2){
+        searchForNewUserDetails =  localStorage.getItem('searchForNewUserDetails')
+        if(searchForNewUserDetails == 'true'){ 
+          let verifiedUserDetails = await verifyUserDetailChanges()
+
+          instagramPost = [{
+            'duplicate': true,
+            'media_id': media_id,
+            'url': responseUrl,
+            'full_name': verifiedUserDetails.full_name, 
+            'bio': verifiedUserDetails.bio,
+            'external_url': verifiedUserDetails.external_url,
+            'following': verifiedUserDetails.following,
+            'profile_pic': verifiedUserDetails.profile_pic,
+            'followersMark': verifiedUserDetails.followersMark
+          }]
+
+        }else{
+            console.log('nao deve chamar a lib de search comments, pulou a vez')
+            instagramPost = [{
+              'duplicate': true,
+              'media_id': media_id,
+              'url': responseUrl,
+              'full_name': {fullNameChanged: false}, 
+              'bio': {bioChanged: false},
+              'external_url': {externalUrlChanged: false},
+              'following': {followingNumberChanged: false},
+              'profile_pic': {profilePicChanged: false},
+              'followersMark': {followersMarkChanged: false}
+            }]
+        }
+        if(searchForNewUserDetails == 'true'){
+            localStorage.setItem('searchForNewUserDetails', false)
+        }else{
+            localStorage.setItem('searchForNewUserDetails', true)
+        }
+        localStorage.setItem('countNewUserDetails', 1)
+      }
     }
     return instagramPost  
 }
