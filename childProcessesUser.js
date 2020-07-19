@@ -14,7 +14,7 @@ const fullNameChanged = async newFullName => {
 
 ${newFullName} 
        
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -46,7 +46,7 @@ const bioChanged = async newBio => {
 
 ${newBio}        
 
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -75,7 +75,7 @@ const externalUrlChanged = async newExternalUrl => {
 
 ${newExternalUrl}     
    
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -103,7 +103,7 @@ const followingNumberChanged = async newFollowingNumber => {
         tweet = `[UPDATE] ${BOT_USER} has a new profile pic: 
 
 ${newFollowingNumber}        
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -130,7 +130,7 @@ const followersMark = async newFollowersMark => {
         
         tweet = `[UPDATE] ${BOT_USER} hits ${newFollowersMark}+ followers 
 
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 
@@ -158,7 +158,7 @@ const profilePicChanged = async profilePicUrl => {
         tweet = `[UPDATE] ${BOT_USER} has a new profile pic: 
         
 ${profilePicUrl} 
-@ygofficialblink #${BOT_NAME}`
+@BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet])
 

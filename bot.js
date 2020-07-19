@@ -11,14 +11,17 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 30000)
+    }, 25000)
 }
 
 let callMaster = async () => {
-   let igPost = await instagramPost.getInstagramPosts() 
-        igPost = igPost[0]   
-    
-    if(igPost.duplicate == false){
+    let result = await cpLibs.getInstaloaderPosts()
+    let payload = JSON.parse(JSON.stringify(result)),
+        igPost = await instagramPost.getInstagramPosts(payload.post_shortcode)
+     /*  let igPost = await instagramPost.getInstagramPosts(shortcode) 
+        igPost = igPost[0]    
+     */
+   /*  if(igPost.duplicate == false){
         //await cpLibs.tweetInstagramPosts(igPost)
     }else{
         //await postChangedUserDetails(igPost)
@@ -64,9 +67,9 @@ let callMaster = async () => {
             }
             localStorage.setItem('count', 1)
         }
-    } 
+    }  */
 
-  //  await handleStories()
+   // await handleStories()
 }
 
 let postChangedUserDetails = async igPost => {
@@ -101,7 +104,9 @@ let handleStories = async () => {
     if(instaLoaderStories == 0){
         console.log('No new stories')
     }else{
+        console.log('stories ', instaLoaderStories)
         let json = JSON.parse("[" + instaLoaderStories + "]")
+        console.log('json', json)
         stories = json[0].reverse()
         storiesToPost = await instagramStory.getInstagramStories(stories)
 

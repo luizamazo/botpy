@@ -1,1 +1,11 @@
-{"id":"14400214942","username":"hi_sseulgi","full_name":"Seulgi","bio":"","external_url":null,"following":13,"followers":6432357,"profile_pic":"https://instagram.fbsb8-2.fna.fbcdn.net/v/t51.2885-19/s320x320/70612494_1272091566296124_7078356886948413440_n.jpg?_nc_ht=instagram.fbsb8-2.fna.fbcdn.net&_nc_ohc=RL-OBt4qPqAAX8CmdKD&oh=4834dcc950ea7e8446abc4c18900a16f&oe=5F2DE6DA","followersMark":"5M"}
+{
+    "id": "user.id",
+    "username":" user.username",
+    "full_name": "user.full_name",
+    "biography":" user.biography",
+    "external_url": "user.external_url",
+    "following": "user.edge_follow.count",
+    "profile_pic": "user.profile_pic_url_hd",
+    "followers": "2.000",
+    "followersMark": "2.000"
+}

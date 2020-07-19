@@ -20,11 +20,11 @@ let tweetInstagramPosts = async igPost => {
             tweet = `[IGTV] ${BOT_USER}: ${text} 
 
 ${igPost.igTVUrl}
-${igPost.url} @ygofficialblink #${BOT_NAME}`
+${igPost.url} @BLACKPINK #${BOT_NAME}`
         }else{
             tweet = `[POST${igPost.count}] ${BOT_USER}: ${text} 
      
-${igPost.url} @ygofficialblink #${BOT_NAME}`
+${igPost.url} @BLACKPINK #${BOT_NAME}`
         }
     
         const child = spawn('python', ['bot.py', tweet])
@@ -51,7 +51,7 @@ let tweetInstagramStories = async (igStory) => {
         flag = false
         tweet = `[STORIES] ${BOT_USER}: 
         
-${igStory.storyUrl} @ygofficialblink #${BOT_NAME}`
+${igStory.storyUrl} @BLACKPINK #${BOT_NAME}`
 
         const child = spawn('python', ['bot.py', tweet, igStory.shortcode])
 
@@ -94,6 +94,26 @@ let tweetRelevantComments = async (post_url, media_id) => {
     })
 }
 
+let getInstaloaderPosts = async () => {
+    return new Promise(function(resolve, reject) {
+        let result = {}
+        const child = spawn('python', ['instaloader/download-posts.py', BOT_USER])
+
+        child.stdout.on('data', (data) => {
+            result = data
+        })
+
+        child.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`)
+        })
+
+        child.on('close', (code) => {
+            console.log(`child process exited with code ${code}`)
+            resolve(result.toString())
+        })   
+    })
+}
+
 let getInstaloaderStories = async () => {
     return new Promise(function(resolve, reject) {
         let result = {}
@@ -121,5 +141,6 @@ module.exports = {
     tweetInstagramPosts,
     tweetInstagramStories,
     tweetRelevantComments,
+    getInstaloaderPosts,
     getInstaloaderStories
 }
