@@ -55,7 +55,7 @@ let getFilesFromFolder = async (filePath) => {
 }
 
 let deleteMediaFromFolder = async (media, folder) => {
-  console.log('media from deleteMediaFromFolder', media)
+  console.log('media from deleteMediaFromFolder', media, 'folder', folder)
   for(file of media){
     imagePath = path.resolve('media', folder, file)
     fs.unlink(imagePath, function(err){

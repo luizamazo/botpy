@@ -8,16 +8,17 @@ from pprint import pprint
 from datetime import datetime 
 
 arg = sys.argv[1:]
-#BOT_USER = arg[0]
-BOT_USER = 'noctedaemones'
-BOT_NAME = 'botzinho'
+payload = arg[0]
+payload = payload.split(',')
+BOT_USER = payload[0]
+BOT_NAME = payload[1]
 
 ig = instaloader.Instaloader(post_metadata_txt_pattern="", download_comments=False,
                              download_pictures=False, download_video_thumbnails=False,
                              download_videos=False,
                              ) 
 
-ig.load_session_from_file('corongabot', filename = 'CORONGABOT')
+ig.load_session_from_file('baerserk', filename = 'SERKBOT')
 profile = ig.check_profile_id(BOT_USER)
 from_user = instaloader.Profile.from_username(ig.context, BOT_USER)
 
@@ -40,7 +41,7 @@ def handleUserDetails(userDetails_path, from_user):
     print(payload[0]['userDetails'])
     userDetails = payload[0]['userDetails']
     tweetDetailChanges(payload)
-    #utils.write_json(userDetails_path, userDetails)
+    utils.write_json(userDetails_path, userDetails)
 
 def verifyChanges(userDetails_path, userDetailsFile, userDetails):
     userDetails = userDetails[0]
@@ -120,7 +121,6 @@ def handleFollowingList():
             "username": head.strip(),
             "label": "following"
         })
-    print('teste', followingList, len(followingList))
     isFileEmpty = utils.verifyIfFileIsEmpty(followingList_path)
     if len(followingList) > 0:
         if isFileEmpty == True:
@@ -217,26 +217,26 @@ def tweetDetailChanges(payload):
     
     if profile_pic['profilePicChanged'] == True: 
         tweet = '[UPDATE] ' + BOT_USER + ' has a new profile pic:\n\n @BLACKPINK #' + BOT_NAME
-        #print('PY: Tweet new profile pic')
+        print('PY: Tweet new profile pic')
         folder = "user"
         media_ids = utilsTwitter.uploadMedia(folder, "profile_pic")
-        #utilsTwitter.sendTweet(folder, media_ids, tweet)
+        utilsTwitter.sendTweet(folder, media_ids, tweet)
     if fullName['fullNameChanged'] == True: 
         tweet = '[UPDATE] '+ BOT_USER + ' has a new full name:\n\n' + fullName['newFullName'] + '\n\n@BLACKPINK #' + BOT_NAME
-        #utilsTwitter.sendTextTweet(tweet)
+        utilsTwitter.sendTextTweet(tweet)
     if bio['bioChanged'] == True:
         if bio['newBio']:
             key = ' has a new bio:'
         else:
             key = ' removed the bio'
         tweet = '[UPDATE] ' + BOT_USER + key + '\n\n' + bio['newBio'] + '\n\n@BLACKPINK #' + BOT_NAME
-        #utilsTwitter.sendTextTweet(tweet)
+        utilsTwitter.sendTextTweet(tweet)
     if external_url['externalUrlChanged'] == True:
         if external_url['newExternalUrl'] is not None:
             tweet = '[UPDATE] ' + BOT_USER + ' has a new external url:' + external_url['newExternalUrl'] + '\n\n@BLACKPINK #' + BOT_NAME
-            #utilsTwitter.sendTextTweet(tweet)
+            utilsTwitter.sendTextTweet(tweet)
     if followersMark['followersMarkChanged'] == True: 
         tweet = '[UPDATE] ' + BOT_USER + ' hits' + followersMark['newFollowersMark'] + '+ followers\n\n@BLACKPINK #' + BOT_NAME
-        #utilsTwitter.sendTextTweet(tweet)
+        utilsTwitter.sendTextTweet(tweet)
 
 master()

@@ -1,385 +1,165 @@
 require('dotenv').config({path: '../../.env'})
 
-const instagramPosts = require('instagram-posts')
-const save = require('instagram-save')
 const axios = require('axios')
 const utils = require('../utils')
-const jsonfile = require('jsonfile')
 let path = require('path')
 const fs = require('fs')
-const LocalStorage = require('node-localstorage').LocalStorage
-const localStorage = new LocalStorage('./storage')
 
-const BOT_USER = process.env.BOT_USER
-
-let getInstagramPosts = async () => {
-
-    let response = await callInstaPosts()
-    let responseIndex = response[0], 
-        responseTypename = responseIndex.__typename,
-        responseUrl = responseIndex.url,
-        shortcode = responseIndex.shortcode,
-        username = responseIndex.username,
-        media_id = responseIndex.id,
-        isPostDuplicate = false,
-        instagramPost = {},
+let getInstagramPosts = async (payload) => {
+    let payloadIndex = payload[0],
+        shortcode = payloadIndex.post_shortcode,
+        typename = payloadIndex.typename,
         mediaFromFolder = '',
-        count = ''
-
+        instagramPost = [],
+        postUrl = `https://www.instagram.com/p/${shortcode}`
+    let postPayload = await inspectPost(shortcode, typename)
+    console.log('after inspect post, payload is', postPayload)
     mediaFromFolder = await utils.getMediaFromFolder('posts')
-
-    if(responseTypename != 'GraphSidecar'){
-      singleShortcode = shortcode.split()
-      isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, singleShortcode)
-      console.log('Is Non GraphSideCar duplicate?', isPostDuplicate)
+    if(typename == 'GraphSidecar'){
+      isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, postPayload.shortcode)
+      console.log('is graphsidecar duplicate?', isPostDuplicate)
+      postPayload = postPayload.sidecarPayload
     }else{
-      shortcode = await convertGraphSideCar(responseUrl)
-      await verifyIfPostIsDuplicate(mediaFromFolder, shortcode).then(res =>{
-        isPostDuplicate = res
-        console.log('Is GraphSideCar duplicate?', isPostDuplicate)
-      })
+      console.log('antes do verify', postPayload)
+      isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, shortcode.split())
+      console.log('Is non graphsidecar duplicate?', isPostDuplicate, 'dps do verifty', postPayload)
     }
-    if(isPostDuplicate == false){ 
-      if(mediaFromFolder.length >= 1){utils.deleteMediaFromFolder(mediaFromFolder, 'posts')}
-      let result = await saveMedia(response)
-      if(result.isIGTV){
-        console.log('meee', mediaFromFolder, mediaFromFolder.length)
-        filePath = path.resolve('media', 'posts', 'thumbnail')
-        console.log('AKI', responseIndex.thumbnail_src, response)
-        await utils.download(responseIndex.thumbnail_src, filePath).then(res => {
-        console.log(`IGTV THUMB ${filePath} was downloaded and saved to a file`)
-        })
-      } 
-
-      await handleComments(media_id)
-
-      let text = responseIndex.text,
-      time = responseIndex.time,
-      typename = responseIndex.__typename,
-      count = ''
-
-      text = text.replace(/@/g, '@.')
+    if(typename == 'GraphSidecar'){
+      postPayload = postPayload[0]
+    }
+    if(isPostDuplicate == false){
+      if(mediaFromFolder.length >= 1){await utils.deleteMediaFromFolder(mediaFromFolder, 'posts')}
+      await saveMedia(postPayload, typename)
+      await handleComments(postPayload.media_id)
+      let postMediaCount = ''
+      postPayload.caption = postPayload.caption.replace(/@/g, '@.')
       mediaFromFolder = await utils.getMediaFromFolder('posts')
-      count = countMediaType(mediaFromFolder)
-
+      postMediaCount = countMediaType(mediaFromFolder)
       instagramPost = [{
-        'duplicate': false,
+        'duplicate': false, 
         'typename': typename,
-        'username': username,
-        'isIGTV': result.isIGTV,
-        'igTVUrl': result.igTVUrl,
-        'text': text,
-        'time': time,
-        'url': responseUrl,
-        'count': count
+        'postPayload': postPayload,
+        'postUrl': postUrl,
+        'postMediaCount': postMediaCount
       }]
-
     }else{
-      countNewUserDetails = localStorage.getItem('countNewUserDetails')
-      searchForNewUserDetails = localStorage.getItem('searchForNewUserDetails')
-      console.log(`
-          NO INICIO
-          count ${countNewUserDetails}
-          searchForNewUserDetails ${searchForNewUserDetails}
-      `)
-      
-      if(searchForNewUserDetails == null){
-          localStorage.setItem('searchForNewUserDetails', true)
-          searchForNewUserDetails = localStorage.getItem('searchForNewUserDetails')
-      }
-      if(countNewUserDetails == null){
-          localStorage.setItem('countNewUserDetails', 1)
-          countNewUserDetails = localStorage.getItem('countNewUserDetails')
-      }
-      countNewUserDetails = parseInt(countNewUserDetails)
-
-      console.log(`
-          NO MEIO
-          countNewUserDetails ${countNewUserDetails}
-          searchForNewUserDetails ${searchForNewUserDetails}
-      `)
-
-      if(countNewUserDetails == 1){
-          countNewUserDetails++
-          localStorage.setItem('countNewUserDetails', countNewUserDetails)
-          console.log('countNewUserDetails == 1, novo valor de countNewUserDetails', countNewUserDetails)
-      }else if(countNewUserDetails == 2){
-        searchForNewUserDetails =  localStorage.getItem('searchForNewUserDetails')
-        if(searchForNewUserDetails == 'true'){ 
-          let verifiedUserDetails = await verifyUserDetailChanges()
-
-          instagramPost = [{
-            'duplicate': true,
-            'media_id': media_id,
-            'url': responseUrl,
-            'full_name': verifiedUserDetails.full_name, 
-            'bio': verifiedUserDetails.bio,
-            'external_url': verifiedUserDetails.external_url,
-            'following': verifiedUserDetails.following,
-            'profile_pic': verifiedUserDetails.profile_pic,
-            'followersMark': verifiedUserDetails.followersMark
-          }]
-
-        }else{
-            console.log('nao deve chamar a lib de search comments, pulou a vez')
-            instagramPost = [{
-              'duplicate': true,
-              'media_id': media_id,
-              'url': responseUrl,
-              'full_name': {fullNameChanged: false}, 
-              'bio': {bioChanged: false},
-              'external_url': {externalUrlChanged: false},
-              'following': {followingNumberChanged: false},
-              'profile_pic': {profilePicChanged: false},
-              'followersMark': {followersMarkChanged: false}
-            }]
-        }
-        if(searchForNewUserDetails == 'true'){
-            localStorage.setItem('searchForNewUserDetails', false)
-        }else{
-            localStorage.setItem('searchForNewUserDetails', true)
-        }
-        localStorage.setItem('countNewUserDetails', 1)
-      }
+      instagramPost = [{
+        'duplicate': true, 
+        'typename': typename,
+        'postPayload': postPayload,
+        'postUrl': postUrl
+      }]
     }
-    return instagramPost  
+    return instagramPost
 }
 
-let handleComments = async (media_id) => {
-  console.log('no handle comment')
-  folder_path = path.resolve('instagram', 'comments')
-  filesFromFolder = await utils.getFilesFromFolder(folder_path)
-  utils.deleteComments(filesFromFolder, 'comments')
-  commentsPosted = path.resolve('instagram', 'comments',`commentsPosted [${media_id}].json`)
-  //commentsToPost =  path.resolve('instagram', 'comments',`commentsToPost [${media_id}].json`)
-  console.log('commentsPosted path', commentsPosted)
-  fs.closeSync(fs.openSync(commentsPosted, 'w'))
-  //fs.closeSync(fs.openSync(commentsToPost, 'w'))
-}
-
-let verifyUserDetailChanges = async () => {
-  let userUrl = `https://www.instagram.com/${BOT_USER}/?__a=1`  
-  
-  return await axios({url: userUrl, method: 'GET' })
+let inspectPost = async (shortcode, typename) => {
+  postUrl = `https://www.instagram.com/p/${shortcode}/?__a=1`
+  return await axios({url: postUrl, method: 'GET' })
     .then(async response => {
       let {graphql} = response.data,
-      user = graphql.user,
-      fullNameChanged = false,
-      bioChanged = false,
-      externalUrlChanged = false,
-      followingNumberChanged = false,
-      profilePicChanged = false,
-      followersMarkChanged = false,
-      userDetails = {}
-      
-      userDetails = {
-        id: user.id,
-        username: user.username,
-        full_name: user.full_name,
-        bio: user.biography,
-        external_url: user.external_url,
-        following: user.edge_follow.count,
-        followers: user.edge_followed_by.count,
-        profile_pic: user.profile_pic_url_hd
+          shortcodeMedia = graphql.shortcode_media, 
+          edgeMediaToCaption = shortcodeMedia.edge_media_to_caption.edges[0],
+          caption = '',
+          takenAt = shortcodeMedia.taken_at_timestamp,
+          media_id = shortcodeMedia.id 
+      if(edgeMediaToCaption != undefined){
+        caption = edgeMediaToCaption.node.text
       }
-
-      file = path.resolve('instagram', 'userDetails.json')
-
-      let json = jsonfile.readFileSync(file)
-      let isEqual = Object.entries(json).toString() === Object.entries(userDetails).toString()
-      
-      if(!isEqual){
-
-        if(json.full_name != userDetails.full_name){
-          fullNameChanged = true
+      if(typename == 'GraphImage'){
+        payload =  {
+          "url": shortcodeMedia.display_url,
+          "shortcode": [shortcode],
+          "caption": caption,
+          "takenAt": takenAt,
+          "media_id": media_id
         }
-
-        if(json.bio != userDetails.bio){
-          bioChanged = true
-        }
-
-        if(json.external_url != userDetails.external_url){
-          externalUrlChanged = true
-        }
-
-        if(json.following != userDetails.following){
-          followingNumberChanged = true
-        }
-        
-        let newFollowersMark = await verifyFollowersMarks(userDetails)
-        if(json.followers != userDetails.followers){
-          if(json.followersMark !== newFollowersMark){
-            console.log('entrou no if hmmm')
-            followersMarkChanged = true
+      }else if(typename == 'GraphVideo'){
+        if(shortcodeMedia.product_type == 'igtv'){
+          payload = {
+            "isIGTV": true, 
+            "IGTVUrl": shortcodeMedia.video_url, 
+            "thumbnailUrl": shortcodeMedia.thumbnail_src,
+            "shortcode": [shortcode],
+            "title": shortcodeMedia.title,
+            "caption": caption,
+            "takenAt": takenAt,
+            "media_id": media_id
+          }
+        }else{
+          payload = {
+            "isIGTV": false,
+            "url": shortcodeMedia.video_url,
+            "shortcode": [shortcode],
+            "caption": caption,
+            "takenAt": takenAt,
+            "media_id": media_id
           }
         }
-        userDetails.followersMark = newFollowersMark
-        if(json.profile_pic != userDetails.profile_pic){
-          filePath = path.resolve('media', 'user', `profile_pic`)
-          await utils.download(userDetails.profile_pic, filePath).then(res => {
-            console.log(`${filePath} was downloaded and saved to a file`)
-          }) 
-          profilePicChanged = true
-        }
-        jsonfile.writeFileSync(file, userDetails)
-      }
-      let payload = { 
-          full_name: {
-            fullNameChanged: fullNameChanged,
-            newFullName: userDetails.full_name
-          },
-          bio:{
-            bioChanged: bioChanged,
-            newBio: userDetails.bio
-          },
-          external_url: {
-            externalUrlChanged: externalUrlChanged,
-            newExternalUrl: userDetails.external_url
-          },
-          following: {
-            followingNumberChanged: followingNumberChanged, 
-            newFollowingNumber: userDetails.following
-          },
-          followersMark: {
-            followersMarkChanged: followersMarkChanged, 
-            newFollowersMark: userDetails.followersMark
-          },
-          profile_pic: {
-            profilePicChanged: profilePicChanged, 
-            profilePicUrl: userDetails.profile_pic
+      }else if(typename == 'GraphSidecar'){
+          captionTimeMediaId = {
+            "caption": caption, 
+            "takenAt": takenAt,
+            "media_id": media_id
           }
+          payload = await inspectGraphSideCar(
+            shortcodeMedia.edge_sidecar_to_children.edges, 
+            captionTimeMediaId
+          )
       }
-      return payload 
-    })
-}
-
-let callInstaPosts = async () => {
-  let count = 0,
-  maxTries = 5
-  while(true){
-    try {
-      console.log('Entered try -> callInstaPosts')
-      instaPosts = await instagramPosts(BOT_USER, {count: 1})
-      //console.log('instaPosts', instaPosts)
-      return instaPosts
-    }catch(error) {
-      if(++count == maxTries){
-        console.error(error)
-        throw error
-      }else{
-        continue
-      }
-    } 
-  } 
-}
-
-let saveMedia = async (response) => {
-  let responseIndex = response[0],
-      responseTypename = responseIndex.__typename,
-      responseUrl = responseIndex.url,
-      shortcodeOrder = [],
-      isIGTV = false,
-      igTVUrl = '',
-      singleMedia = ''
-
-  if(responseTypename == 'GraphSidecar'){
-   await convertGraphSideCar(responseUrl).then(shortcode => {
-    shortcodeOrder = shortcode
-   })
- 
-  }else{
-    console.log('IG Post has a single media and it was saved')
-    filePath = path.resolve('media', 'posts')
-    console.log('response URL e filepath', responseUrl, filePath)
-    singleMedia= await save(responseUrl, filePath).then(async res => {
-      console.log('resAA', res)
-      isIGTV = res.isIGTV
-      igTVUrl = res.source
-      let fileName = res.url 
-      fileName = fileName.replace('https://www.instagram.com/p/', '')
-      fileName = fileName.split()
-      return fileName
+      return payload
+    }).catch(error => {
+      console.error(error)
     }) 
-  }
-  return {isIGTV: isIGTV, igTVUrl: igTVUrl}
 }
 
-
-let convertGraphSideCar = async responseUrl => {
-    responseUrl = responseUrl + '?__a=1'
-    let urlShortcode = []
-
-    return await axios({url: responseUrl, method: 'GET' })
-      .then(async response => {
-        let body = response.data
-        let media = body.graphql.shortcode_media,
-            number = 0,
-            filePath = ''
-
-        media = Object.entries(media.edge_sidecar_to_children)
-
-        for(const[key, value] of media) {
-          let node = value.map((novo) => {
-            return novo.node
-          })
-          urlShortcode = getUrlShortCode(node)
-        }
-        
-        for(value of urlShortcode){  
-          number++
-          filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
-          await utils.download(value.url, filePath).then(res => {
-            console.log(`${filePath} was downloaded and saved to a file`)
-          }) 
-        } 
-       
-       shortcodeOrder = orderMedia(urlShortcode)
-       return shortcodeOrder
-      }).catch(error => {
-        console.log(error)
-      })
-}
-
-let getUrlShortCode = node => {
-  let uri = []
-  for(child of node){
-   
-    if(child.is_video){
-      uri.push({
-        'url': child.video_url,
-        'shortcode': child.shortcode,
-        'is_video': child.is_video
+let inspectGraphSideCar = async (edges, captionTimeMediaId) => {
+  let shortcodes = [],
+      sidecarPayload = []
+  for(value of edges){
+    if(value.node.is_video){
+      sidecarPayload.push({
+        "url": value.node.video_url, 
+        "shortcode": value.node.shortcode,
+        "is_video": value,
+        "caption": captionTimeMediaId.caption,
+        "takenAt": captionTimeMediaId.takenAt,
+        "media_id": captionTimeMediaId.media_id
       })
     }else{
-      uri.push({
-        'url': child.display_url,
-        'shortcode': child.shortcode,
-        'is_video': child.is_video
+      sidecarPayload.push({
+        "url": value.node.display_url, 
+        "shortcode": value.node.shortcode,
+        "is_video": value.node.is_video,
+        "caption": captionTimeMediaId.caption,
+        "takenAt": captionTimeMediaId.takenAt,
+        "media_id": captionTimeMediaId.media_id
       })
     }
-  } 
-  return uri
+    shortcodes.push(value.node.shortcode)
+  }
+  return {"sidecarPayload": sidecarPayload, "shortcode": shortcodes} 
 }
 
-let verifyIfPostIsDuplicate = async (media, postShortcode) => {
-  let flag = false
+let verifyIfPostIsDuplicate = async (mediaFromFolder, shortcode) => {
+  let flag = false 
   console.log(`Verifying if post is duplicate...
-  Current media from the folder ->`, media)
-  if(media.length == 0){
-    console.log('folder was empty before, posts')
+  Current media from the folder ->`, mediaFromFolder, 'length mff', mediaFromFolder.length, ' shortcode[0]', shortcode[0], shortcode)
+  if(mediaFromFolder.length == 0){
+    console.log('Posts folder was empty')
   }else{
-    while(postShortcode.length != 0){
-      for(file of media){
-        if(postShortcode.length != 0){
-          let firstElement = postShortcode[0]
+    while(shortcode.length != 0){
+      for(file of mediaFromFolder){
+        if(shortcode.length != 0){
+          let firstElement = shortcode[0]
           if(file.includes(firstElement)){
             console.log(`Duplicate media, file ${file}`)
             flag = true 
-            postShortcode.shift()
+            shortcode.shift()
           }else{
+            console.log(`${firstElement} didnt exist before`)
             flag = false 
-            postShortcode.shift()
-            console.log(`File ${file} didnt exist before`)
+            shortcode.shift()
           }
         }
       }
@@ -388,11 +168,41 @@ let verifyIfPostIsDuplicate = async (media, postShortcode) => {
   return flag
 }
 
-let orderMedia = urlShortcode => {
-  let shortcodeOrder = urlShortcode.map(value => {
-    return value.shortcode
-  })
-  return shortcodeOrder
+let saveMedia = async (postPayload, typename) => {
+  let number = 0 
+  console.log('postpayload no savemedia', postPayload)
+  if(typename == 'GraphSidecar'){
+    for(value of postPayload){
+      number++
+      filePath = path.resolve('media', 'posts', `${number} - ${value.shortcode}`)
+      await utils.download(value.url, filePath).then(res => {
+        console.log(`${filePath} was downloaded and saved to a file`)
+      }) 
+    }
+  }else if(typename == 'GraphVideo' && postPayload.isIGTV){
+      filePath = path.resolve('media', 'posts', `thumbnail`)
+      console.log('EH IGTV', postPayload, 'filepath', filePath)
+      await utils.download(postPayload.thumbnailUrl, filePath).then(res => {
+        console.log(`IGTV THUMB ${filePath} was downloaded and saved to a file`)
+      })
+      filePath = path.resolve('media', 'posts', `${postPayload.shortcode}`)
+      await utils.download(postPayload.IGTVUrl, filePath).then(res => {
+        console.log(`IGTV FILE ${filePath} was downloaded and saved to a file`)
+      })
+  }else{
+    filePath = path.resolve('media', 'posts', `${postPayload.shortcode}`)
+    await utils.download(postPayload.url, filePath).then(res => {
+      console.log(`${filePath} was downloaded and saved to a file`)
+    }) 
+  }
+}
+
+let handleComments = async media_id => {
+  folderPath = path.resolve('instagram', 'comments')
+  filesFromFolder = await utils.getFilesFromFolder(folderPath)
+  await utils.deleteComments(filesFromFolder, 'comments')
+  commentsPosted = path.resolve('instagram', 'comments', `commentsPosted [${media_id}].json`)
+  fs.closeSync(fs.openSync(commentsPosted, 'w'))
 }
 
 let countMediaType = mediaFromFolder => {
@@ -406,11 +216,9 @@ let countMediaType = mediaFromFolder => {
       countVideos++
     } 
   }
-
   if(countPictures != 0 && countVideos != 0){
     count = ` | ${countPictures}P${countVideos}V`
   }
-
   if(countPictures == 0 && countVideos > 1){
     count = ` | ${countVideos}V`
   }else if(countVideos == 0 && countPictures > 1){
@@ -420,68 +228,6 @@ let countMediaType = mediaFromFolder => {
   return count
 }
 
-
-let verifyFollowersMarks = async (userDetails) => {
-
-  let followersMark = ''
-  
-  if(userDetails.followers >= 1000000 && userDetails.followers < 5000000){
-    followersMark = '1M'
-  }
-  if(userDetails.followers >= 5000000 && userDetails.followers < 10000000){
-    followersMark = '5M'
-  }
-  if(userDetails.followers >= 25000000 && userDetails.followers < 30000000){
-    followersMark = '25M'
-  }
-  if(userDetails.followers >= 30000000 && userDetails.followers < 35000000){
-    followersMark = '30M'
-  }
-  if(userDetails.followers >= 35000000 && userDetails.followers < 40000000){
-    followersMark = '35M'
-  }
-  if(userDetails.followers >= 40000000 && userDetails.followers < 45000000){
-    followersMark = '40M'
-  }
-  if(userDetails.followers >= 45000000 && userDetails.followers < 50000000){
-    followersMark = '45M'
-  }
-  if(userDetails.followers >= 50000000 && userDetails.followers < 55000000){
-    followersMark = '50M'
-  }
-  if(userDetails.followers >= 55000000 && userDetails.followers < 60000000){
-    followersMark = '55M'
-  }
-  if(userDetails.followers >= 60000000 && userDetails.followers < 65000000){
-    followersMark = '60M'
-  }
-  if(userDetails.followers >= 65000000 && userDetails.followers < 70000000){
-    followersMark = '65M'
-  }
-  if(userDetails.followers >= 70000000 && userDetails.followers < 75000000){
-    followersMark = '70M'
-  }
-  if(userDetails.followers >= 75000000 && userDetails.followers < 80000000){
-    followersMark = '75M'
-  }
-  if(userDetails.followers >= 80000000 && userDetails.followers < 85000000){
-    followersMark = '80M'
-  }
-  if(userDetails.followers >= 85000000 && userDetails.followers < 90000000){
-    followersMark = '85M'
-  }
-  if(userDetails.followers >= 90000000 && userDetails.followers < 95000000){
-    followersMark = '90M'
-  }
-  if(userDetails.followers >= 95000000 && userDetails.followers < 100000000){
-    followersMark = '95M'
-  }
-  if(userDetails.followers >= 100000000 && userDetails.followers < 110000000){
-    followersMark = '100M'
-  }
-  return followersMark
-  
-}
 
 module.exports = {
   getInstagramPosts

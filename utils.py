@@ -21,7 +21,7 @@ def getMediaFromFolder(folder):
     dir = os.path.dirname(__file__)
     mediaFolder = os.path.join(dir, 'media/' + folder)
     media_list = [] 
-    print('VNFENRRO.', mediaFolder)
+    print('getMediaFromFolder', mediaFolder)
  
     for dirpath, dirnames, files in os.walk(mediaFolder):
         for f in files:
@@ -49,10 +49,10 @@ def getFileFromMediaFolder(folder, fileName):
                 mediaPath = os.path.join(dirpath, f)
     return mediaPath            
 
-def deleteMediaFromFolder(folder):
+def deleteMediaFromFolder(folder, subfolder):
     dir = os.path.dirname(__file__)
-    path = os.path.join(dir, 'media/' + folder)
-    print(path)
+    path = os.path.join(dir, folder + subfolder)
+    print(path) 
     shutil.rmtree(path) 
     os.mkdir(path)
     

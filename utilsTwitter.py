@@ -36,7 +36,7 @@ def sendTweet(folder, media_ids, tweet, storyName=None):
             print('Error sending tweet ->', error)
             if count == maxTries:
                 if folder == "posts":
-                    utils.deleteMediaFromFolder(folder)
+                    utils.deleteMediaFromFolder('media/', folder)
                 elif folder == "stories":
                     utils.deleteFileFromFolder(folder, storyName)
                 raise
@@ -75,7 +75,7 @@ def sendReply(previous_tweet_id, media_ids, tweet, folder):
             print('Error sending tweet ->', error)
             if count == maxTries:
                 if folder == "posts":
-                    utils.deleteMediaFromFolder(folder)
+                    utils.deleteMediaFromFolder('media/', folder)
                 raise
             
 def verifyTweetOrder(tweet_id, media_id, tweet):

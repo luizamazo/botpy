@@ -1,11 +1,9 @@
 {
-    "id": "user.id",
-    "username":" user.username",
-    "full_name": "user.full_name",
-    "biography":" user.biography",
-    "external_url": "user.external_url",
-    "following": "user.edge_follow.count",
-    "profile_pic": "user.profile_pic_url_hd",
-    "followers": "2.000",
-    "followersMark": "2.000"
+    "profile_pic": "https://scontent-gig2-1.cdninstagram.com/v/t51.2885-19/111048924_274325883664803_1097053682062821675_n.jpg?_nc_ht=scontent-gig2-1.cdninstagram.com&_nc_ohc=MiKaDT6aYZkAX_Q-UVc&oh=222827af321b62243200723532d50794&oe=5F459473",
+    "full_name": "botzinho",
+    "biography": "",
+    "external_url": null,
+    "followers": 0,
+    "following": 0,
+    "followersMark": ""
 }

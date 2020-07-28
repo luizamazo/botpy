@@ -1,6 +1,6 @@
 const relevantUsers = [
     'sooyaaa__', 'jennierubyjane', 'roses_are_rosie', 'lalalalisa_m',
-    'corongabot', 'luizamazo'
+    'baerserk', 'luizamazo'
 ]
 
 module.exports = relevantUsers

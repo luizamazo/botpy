@@ -7,9 +7,8 @@ arg = sys.argv[1:]
 BOT_USER = arg[0]
 
 ig = instaloader.Instaloader() 
-ig.load_session_from_file('corongabot', filename = 'CORONGABOT')
+ig.load_session_from_file('baerserk', filename = 'SERKBOT')
 profile = ig.check_profile_id(BOT_USER)
-
 
 teste = []
 for story in ig.get_stories(userids=[profile.userid]):
