@@ -2,6 +2,7 @@ import os
 import requests, shutil
 from settings import config
 import pathlib
+import codecs
 import json, re
 
 def teste(tweet): 
@@ -64,7 +65,18 @@ def deleteFileFromFolder(folder, fileName):
             if fileName in f:
                 print('Deleting file ->', os.path.join(dirpath, f))
                 os.remove(os.path.join(dirpath, f)) 
-                
+
+def getCachedSettings(file_path):
+    with open(file_path) as file_data:
+        cached_settings = json.load(file_data, object_hook=from_json)
+    file_data.close()
+    return cached_settings
+    
+def from_json(json_object):
+    if '__class__' in json_object and json_object['__class__'] == 'bytes':
+        return codecs.decode(json_object['__value__'].encode(), 'base64')
+    return json_object
+        
 def write_json(file_path, content):
     with open(file_path, 'w') as outfile:
         print('writing file to', file_path)

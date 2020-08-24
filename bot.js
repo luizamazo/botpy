@@ -11,12 +11,13 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 30000)
+    }, 60000)
 }
 
 let callMaster = async () => {
-    let result = await cpLibs.getInstaloaderPosts()
-    console.log('result', result)
+    await cpLibs.tweetRelevantComments()
+   // await cpLibs.checkInstaLive()
+    /* let result = await cpLibs.getInstaloaderPosts()
     result = result.replace(/'/g, '"')
     console.log('result depois do replace', result)
     let payload = JSON.parse(result),
@@ -31,7 +32,7 @@ let callMaster = async () => {
         await handleComments(igPost)
     }
     
-    await handleStories()
+    await handleStories() */
 }
 
 let handleComments = async (igPost) => {

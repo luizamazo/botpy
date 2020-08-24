@@ -146,8 +146,9 @@ ${igStory.storyUrl} @BLACKPINK #${BOT_NAME}`
 let tweetRelevantComments = async (igPost) => {
     return new Promise(function(resolve, reject) {  
         
-        payload = [BOT_USER, igPost.postUrl, BOT_NAME, igPost.postPayload.media_id]
-        console.log('payload no cplibs commets', igPost, payload)
+        //payload = [BOT_USER, igPost.postUrl, BOT_NAME, igPost.postPayload.media_id]
+      //  console.log('payload no cplibs commets', igPost, payload)
+        let payload = []
         const child = spawn('python', ['comments.py', payload])
 
         child.stdout.on('data', (data) => {
@@ -167,6 +168,30 @@ let tweetRelevantComments = async (igPost) => {
 }
 
 
+let checkInstaLive = async () => {
+    return new Promise(function(resolve, reject) {  
+        
+        payload = [BOT_USER, BOT_NAME]
+        const child = spawn('python', ['lives.py', payload])
+
+        child.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`)
+        })
+
+        child.stderr.on('data', (data) => {
+            console.log(`stderr: ${data}`)
+        })
+
+        child.on('close', (code) => {
+            console.log(`checkInstaLive child process exited with code ${code}`)
+            flag = true
+            resolve(flag)
+        })   
+    })
+}
+
+
+
 
 module.exports = {
     getInstaloaderPosts,
@@ -175,4 +200,5 @@ module.exports = {
     tweetInstagramPosts,
     tweetInstagramStories,
     tweetRelevantComments,
+    checkInstaLive
 }

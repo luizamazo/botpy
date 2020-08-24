@@ -4,23 +4,34 @@ import sys, os
 import time
 from random import randrange
 import random
-from instagram_private_api import Client, ClientCompatPatch
+from instagram_private_api import Client, ClientCompatPatch, ClientCookieExpiredError, ClientLoginRequiredError
 
 
 user_name = "noctedaemones"
 password = "letskillthislove"
-#MEDIA_ID = '2331692048117583287'
-arg = sys.argv[1:]
-payload = arg[0]
-print('argumentos do comment.py', payload)
-payload = payload.split(',')
-BOT_USER = payload[0]
-POST_URL = payload[1]
-BOT_NAME = payload[2]
-MEDIA_ID = payload[3]
+#arg = sys.argv[1:]
+#payload = arg[0]
+#payload = payload.split(',')
+#BOT_USER = payload[0]
+#POST_URL = payload[1]
+#BOT_NAME = payload[2]
+#MEDIA_ID = payload[3]
+BOT_USER = 'baerserk'
+BOT_NAME = 'botzinho'
+POST_URL = 'post url'
+MEDIA_ID = '2310442419067662884'
 print(BOT_USER, POST_URL, BOT_NAME, MEDIA_ID)
 
-api = Client(user_name, password, auto_patch=True)
+cached_path = './ig-private-api/credentials.json'
+
+try:
+    cached_settings = utils.getCachedSettings(cached_path)
+    device_id = cached_settings.get('device_id')
+    #print('cached_settings', cached_settings)
+    api = Client(user_name, password, settings=cached_settings, auto_patch=True)
+except(ClientCookieExpiredError, ClientLoginRequiredError) as e:
+    print('ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
+    #login expired, do relogin but use default ua, keys and such
 
 def commentsMaster():
     comments = api.media_n_comments(MEDIA_ID, n=50)
