@@ -7,14 +7,24 @@ const fs = require('fs')
 
 let getInstagramPosts = async (payload) => {
     let payloadIndex = payload[0],
-        shortcode = payloadIndex.post_shortcode,
-        typename = payloadIndex.typename,
+        fiveMostRecentPosts = payloadIndex.fiveMostRecentPosts,
         mediaFromFolder = '',
-        instagramPost = [],
-        postUrl = `https://www.instagram.com/p/${shortcode}`
-    let postPayload = await inspectPost(shortcode, typename)
-    console.log('after inspect post, payload is', postPayload)
-    mediaFromFolder = await utils.getMediaFromFolder('posts')
+        instagramPost = []
+      //  postUrl = `https://www.instagram.com/p/${shortcode}`
+      jsonPath = path.resolve('instagram', 'posts', 'fiveMostRecentPosts.json')
+      await utils.writeJson(jsonPath, fiveMostRecentPosts)
+      let teste = await utils.readJson(jsonPath)
+      
+      console.log('koakodkadx', teste)
+      for(value of teste){
+        console.log('ARRYA VLAUE', value)
+      }
+    /* for(post of fiveMostRecentPosts){
+
+    }
+    let postPayload = await inspectPost(shortcode)
+    console.log('after inspect post, payload is', postPayload) */
+    /* mediaFromFolder = await utils.getMediaFromFolder('posts')
     if(typename == 'GraphSidecar'){
       isPostDuplicate = await verifyIfPostIsDuplicate(mediaFromFolder, postPayload.shortcode)
       console.log('is graphsidecar duplicate?', isPostDuplicate)
@@ -50,7 +60,7 @@ let getInstagramPosts = async (payload) => {
         'postUrl': postUrl
       }]
     }
-    return instagramPost
+    return instagramPost */
 }
 
 let inspectPost = async (shortcode, typename) => {

@@ -19,25 +19,26 @@ try:
     from_user = instaloader.Profile.from_username(ig.context, BOT_USER)
     posts = from_user.get_posts()
     users = set() 
+    fiveMostRecentPosts = []
+    count = 0
 
     for post in posts:
-        if not post.owner_profile in users:
+        if count >= 0:
             teste = ig.download_post(post, BOT_USER)
-            users.add(post.owner_profile)
             #pprint(vars(post))
             typename = post._node['__typename']
             postObject = post
             post = str(post)
             shortcode = post.replace('<Post', '').replace('>', '')
             shortcode = shortcode.strip()
+            fiveMostRecentPosts.append(shortcode)
+            count += 1
+        if count == 5:
             break
-
-    media_id = instaloader.Post.shortcode_to_mediaid(shortcode)
+        
     teste = []
     teste.append({
-        "post_shortcode": shortcode,
-        "typename": typename,
-        "media_id": media_id
+        "fiveMostRecentPosts": fiveMostRecentPosts
     })
     print(teste)
 except InstaloaderException as error:

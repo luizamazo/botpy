@@ -11,20 +11,20 @@ let master = async () => {
    setIntervalAsync(
     async () => {
         await callMaster()
-    }, 60000)
+    }, 30000)
 }
 
 let callMaster = async () => {
-    await cpLibs.tweetRelevantComments()
+    //await cpLibs.tweetRelevantComments()
    // await cpLibs.checkInstaLive()
-    /* let result = await cpLibs.getInstaloaderPosts()
+    let result = await cpLibs.getInstaloaderPosts()
     result = result.replace(/'/g, '"')
     console.log('result depois do replace', result)
-    let payload = JSON.parse(result),
+    let payload = JSON.parse(result), 
         igPost = await instagramPost.getInstagramPosts(payload)
         igPost = igPost[0]
         console.log('ig post n bot.js', igPost)
-    if(igPost.duplicate == false){
+    /* if(igPost.duplicate == false){
         await cpLibs.tweetInstagramPosts(igPost)
     }else{
         console.log('duplicate true')
@@ -32,7 +32,7 @@ let callMaster = async () => {
         await handleComments(igPost)
     }
     
-    await handleStories() */
+    await handleStories()  */
 }
 
 let handleComments = async (igPost) => {

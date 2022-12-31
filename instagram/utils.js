@@ -19,6 +19,33 @@ let download = async (uri, filePath) => {
   }
 )}
 
+let readJson = async (jsonPath) => {
+  return new Promise(function(resolve, reject) {
+    fs.readFile(jsonPath, 'utf8', (err, jsonString) => {
+      if(err){
+        console.error('Reading of json file failed:', err)
+      }
+      try{
+        const json = JSON.parse(jsonString)
+        resolve(json)
+      }catch(err){
+        console.error('Error parsing JSON', err)
+      }
+    })
+  })
+}
+
+let writeJson = async (jsonPath, content) => {
+  const jsonString = JSON.stringify(content)
+  fs.writeFile(jsonPath, jsonString, err => {
+    if(err){
+      console.error('Error writing JSON file', err)
+    }else{
+      console.log('Successfully wrote JSON file')
+    }
+  })
+}
+
 let getMediaFromFolder = async (folder) => {
   return new Promise(function(resolve, reject) {
     let filePath = path.resolve('media', folder)
@@ -105,6 +132,8 @@ let deleteFileFromFolder = async (file, folder) => {
   
   module.exports = {
       download,
+      readJson,
+      writeJson,
       getMediaFromFolder,
       getFilesFromFolder,
       deleteMediaFromFolder,
